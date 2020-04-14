@@ -2,7 +2,7 @@ package com.alinso.popcon.validator;
 
 
 import com.alinso.popcon.entity.User;
-import com.alinso.popcon.entity.dto.ChangePasswordDto;
+import com.alinso.popcon.entity.dto.user.ChangePasswordDto;
 import com.alinso.popcon.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;

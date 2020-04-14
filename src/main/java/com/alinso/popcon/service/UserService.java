@@ -2,15 +2,18 @@ package com.alinso.popcon.service;
 
 import com.alinso.popcon.entity.City;
 import com.alinso.popcon.entity.User;
-import com.alinso.popcon.entity.dto.ChangePasswordDto;
-import com.alinso.popcon.entity.dto.ProfileDto;
-import com.alinso.popcon.entity.dto.ProfileInfoForUpdateDto;
+import com.alinso.popcon.entity.dto.user.ChangePasswordDto;
+import com.alinso.popcon.entity.dto.user.ProfileDto;
+import com.alinso.popcon.entity.dto.user.ProfileInfoForUpdateDto;
+import com.alinso.popcon.entity.dto.photo.SinglePhotoUploadDto;
 import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.CityRepository;
 import com.alinso.popcon.repository.UserRepository;
 import com.alinso.popcon.util.DateUtil;
+import com.alinso.popcon.util.FileStorageUtil;
 import com.alinso.popcon.util.SendSms;
 import com.alinso.popcon.util.UserUtil;
+import org.apache.commons.io.FilenameUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +33,8 @@ public class UserService {
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
+    FileStorageUtil fileStorageUtil;
 
     @Autowired
     ModelMapper modelMapper;
@@ -43,13 +48,13 @@ public class UserService {
         newUser.setPassword(bCryptPasswordEncoder.encode(newUser.getPassword()));
         newUser.setGain(0);
         newUser.setSpent(0);
-
+        newUser.setProfilePicName("user.png");
         newUser.setEnabled(true);
         User user = userRepository.save(newUser);
         return user;
     }
 
-    public ProfileDto toProfileDto(User user) {
+    public ProfileDto toDto(User user) {
         ProfileDto profileDto = modelMapper.map(user, ProfileDto.class);
         profileDto.setAge(UserUtil.calculateAge(user));
 
@@ -59,12 +64,12 @@ public class UserService {
 
     public ProfileDto findByUserName(String username) {
         User user = userRepository.findByUsername(username);
-        return toProfileDto(user);
+        return toDto(user);
     }
 
     public ProfileDto findById(Long id) {
         User user = userRepository.findById(id).get();
-        return toProfileDto(user);
+        return toDto(user);
     }
 
     public Boolean changePassword(ChangePasswordDto changePasswordDto) {
@@ -156,5 +161,23 @@ public class UserService {
     public User findEntityById(Long id) {
     User user = userRepository.findById(id).get();
     return user;
+    }
+
+    public String updateProfilePic(SinglePhotoUploadDto singlePhotoUploadDto) {
+
+        String extension = FilenameUtils.getExtension(singlePhotoUploadDto.getFile().getOriginalFilename());
+        String newName = fileStorageUtil.makeFileName() + "." + extension;
+
+        User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        //save new file and remove old one
+        if (!loggedUser.getProfilePicName().equals(""))
+            fileStorageUtil.deleteFile(loggedUser.getProfilePicName());
+        fileStorageUtil.storeFile(singlePhotoUploadDto.getFile(), newName, true);
+
+        //update database
+        loggedUser.setProfilePicName(newName);
+        userRepository.save(loggedUser);
+        return newName;
     }
 }

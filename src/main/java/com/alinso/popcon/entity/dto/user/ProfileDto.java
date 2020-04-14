@@ -1,4 +1,4 @@
-package com.alinso.popcon.entity.dto;
+package com.alinso.popcon.entity.dto.user;
 
 import com.alinso.popcon.entity.City;
 import com.alinso.popcon.entity.enums.Gender;
@@ -6,6 +6,8 @@ import com.alinso.popcon.entity.enums.Gender;
 import java.util.Date;
 
 public class ProfileDto {
+
+    private Long id;
 
     private String name;
 
@@ -96,5 +98,13 @@ public class ProfileDto {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

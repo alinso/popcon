@@ -1,4 +1,4 @@
-package com.alinso.popcon.entity.dto;
+package com.alinso.popcon.entity.dto.user;
 
 import com.alinso.popcon.entity.enums.Gender;
 import org.springframework.stereotype.Component;

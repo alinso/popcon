@@ -1,9 +1,10 @@
 package com.alinso.popcon.controller;
 
 import com.alinso.popcon.entity.User;
-import com.alinso.popcon.entity.dto.ChangePasswordDto;
-import com.alinso.popcon.entity.dto.ProfileDto;
-import com.alinso.popcon.entity.dto.ProfileInfoForUpdateDto;
+import com.alinso.popcon.entity.dto.user.ChangePasswordDto;
+import com.alinso.popcon.entity.dto.user.ProfileDto;
+import com.alinso.popcon.entity.dto.user.ProfileInfoForUpdateDto;
+import com.alinso.popcon.entity.dto.photo.SinglePhotoUploadDto;
 import com.alinso.popcon.security.JwtTokenProvider;
 import com.alinso.popcon.security.SecurityConstants;
 import com.alinso.popcon.security.payload.JWTLoginSucessReponse;
@@ -51,6 +52,9 @@ public class UserController {
 
     @Autowired
     LoginValidator loginValidator;
+
+    @Autowired
+    ProfilePicValidator profilePicValidator;
 
     @GetMapping("test")
     public ResponseEntity<?> maleCount(){
@@ -116,6 +120,18 @@ public class UserController {
 
         ProfileInfoForUpdateDto user  =userService.myProfileInfoForUpdate();
         return new ResponseEntity<ProfileInfoForUpdateDto>(user, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/updateProfilePic")
+    public ResponseEntity<?> changeProfilePic(SinglePhotoUploadDto singlePhotoUploadDto, BindingResult result) {
+
+        profilePicValidator.validate(singlePhotoUploadDto, result);
+
+        ResponseEntity<?> errorMap = mapValidationErrorUtil.MapValidationService(result);
+        if (errorMap != null) return errorMap;
+
+        String picName = userService.updateProfilePic(singlePhotoUploadDto);
+        return new ResponseEntity<String>(picName, HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/updateInfo")

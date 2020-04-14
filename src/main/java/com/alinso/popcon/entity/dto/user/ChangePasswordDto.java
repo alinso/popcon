@@ -1,4 +1,4 @@
-package com.alinso.popcon.entity.dto;
+package com.alinso.popcon.entity.dto.user;
 import javax.validation.constraints.NotBlank;
 
 public class ChangePasswordDto {

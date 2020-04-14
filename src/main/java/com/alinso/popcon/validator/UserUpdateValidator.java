@@ -1,7 +1,7 @@
 package com.alinso.popcon.validator;
 
 import com.alinso.popcon.entity.User;
-import com.alinso.popcon.entity.dto.ProfileInfoForUpdateDto;
+import com.alinso.popcon.entity.dto.user.ProfileInfoForUpdateDto;
 import com.alinso.popcon.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;

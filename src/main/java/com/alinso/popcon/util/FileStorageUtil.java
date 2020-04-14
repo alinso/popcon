@@ -22,7 +22,6 @@ import java.util.Random;
 @Service
 public class FileStorageUtil {
 
-    private Path fileUploadDir;
     private Path tmpFileUploadDir;
 
     @Value("${upload.path}")
@@ -48,13 +47,20 @@ public class FileStorageUtil {
         Character c7 = characterArray[rnd.nextInt(33)];
         Character c8 = characterArray[rnd.nextInt(33)];
         Character c9 = characterArray[rnd.nextInt(33)];
+        Character c10 = characterArray[rnd.nextInt(33)];
+        Character c11 = characterArray[rnd.nextInt(33)];
+        Character c12 = characterArray[rnd.nextInt(33)];
+        Character c13 = characterArray[rnd.nextInt(33)];
+        Character c14 = characterArray[rnd.nextInt(33)];
+        Character c15 = characterArray[rnd.nextInt(33)];
+        Character c16 = characterArray[rnd.nextInt(33)];
 
-        String newName = c1.toString() + c2.toString() + c4.toString() + c3.toString() + c5.toString() + c6.toString() + c7.toString() + c8.toString() + c9.toString();
+        String newName = c1.toString() + c2.toString() + c4.toString() + c3.toString() + c5.toString() + c6.toString() + c7.toString() + c8.toString() + c9.toString()
+                + c10.toString() +c11.toString() +c12.toString() +c13.toString() +c14.toString() +c15.toString() +c16.toString();
         return newName;
     }
 
     public void storeFile(MultipartFile file, String newName, Boolean isProfile) {
-        fileUploadDir = Paths.get(fileUploadDirString);
         tmpFileUploadDir = Paths.get(fileUploadDirString+"/tmp");
 
         try {
@@ -71,9 +77,8 @@ public class FileStorageUtil {
     private void saveResizedImage(String name, Boolean isProfile){
 
 
-        int targetWidth = 700;
-        if(isProfile)
-            targetWidth=250;
+        int targetWidth = 900;
+
 
 
         try {
