@@ -5,7 +5,7 @@ import com.alinso.popcon.entity.User;
 import com.alinso.popcon.entity.dto.user.ChangePasswordDto;
 import com.alinso.popcon.entity.dto.user.ProfileDto;
 import com.alinso.popcon.entity.dto.user.ProfileInfoForUpdateDto;
-import com.alinso.popcon.entity.dto.photo.SinglePhotoUploadDto;
+import com.alinso.popcon.entity.dto.photo.PhotoFormDto;
 import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.CityRepository;
 import com.alinso.popcon.repository.UserRepository;
@@ -16,10 +16,14 @@ import com.alinso.popcon.util.UserUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -48,6 +52,10 @@ public class UserService {
         newUser.setPassword(bCryptPasswordEncoder.encode(newUser.getPassword()));
         newUser.setGain(0);
         newUser.setSpent(0);
+        newUser.setName("");
+        newUser.setSurname("");
+        newUser.setRole("ROLE_USER");
+        newUser.setBio("");
         newUser.setProfilePicName("user.png");
         newUser.setEnabled(true);
         User user = userRepository.save(newUser);
@@ -89,17 +97,20 @@ public class UserService {
 
     public void update(ProfileInfoForUpdateDto profileInfoForUpdateDto) {
         User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         City c = null;
         if (profileInfoForUpdateDto.getCityId() != null)
             c = cityRepository.findById(profileInfoForUpdateDto.getCityId()).get();
 
-        u.setBio(profileInfoForUpdateDto.getBio());
         u.setBirthDate(DateUtil.stringToDate(profileInfoForUpdateDto.getbDateString(), "dd/MM/yyyy"));
+
+        u.setBio(profileInfoForUpdateDto.getBio());
         u.setCity(c);
         u.setGender(profileInfoForUpdateDto.getGender());
         u.setName(profileInfoForUpdateDto.getName());
         u.setSurname(profileInfoForUpdateDto.getSurname());
         u.setUsername(profileInfoForUpdateDto.getUsername());
+        u.setPreferredGender(profileInfoForUpdateDto.getPreferredGender());
 
         userRepository.save(u);
 
@@ -162,18 +173,29 @@ public class UserService {
     User user = userRepository.findById(id).get();
     return user;
     }
+    public List<ProfileDto> searchUser(String searchText, Integer pageNum) {
 
-    public String updateProfilePic(SinglePhotoUploadDto singlePhotoUploadDto) {
+        Pageable pageable = PageRequest.of(pageNum, 20);
+        searchText.replaceAll("\\s+","");
+        List<User> users = userRepository.searchUser(searchText, pageable);
+        List<ProfileDto> profileDtos = new ArrayList<>();
+        for (User user : users) {
+            profileDtos.add(toDto(user));
+        }
+        return profileDtos;
+    }
 
-        String extension = FilenameUtils.getExtension(singlePhotoUploadDto.getFile().getOriginalFilename());
+    public String updateProfilePic(PhotoFormDto photoFormDto) {
+
+        String extension = FilenameUtils.getExtension(photoFormDto.getFile().getOriginalFilename());
         String newName = fileStorageUtil.makeFileName() + "." + extension;
 
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         //save new file and remove old one
-        if (!loggedUser.getProfilePicName().equals(""))
+        if (!loggedUser.getProfilePicName().equals("user.png"))
             fileStorageUtil.deleteFile(loggedUser.getProfilePicName());
-        fileStorageUtil.storeFile(singlePhotoUploadDto.getFile(), newName, true);
+        fileStorageUtil.storeFile(photoFormDto.getFile(), newName, true);
 
         //update database
         loggedUser.setProfilePicName(newName);

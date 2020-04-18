@@ -8,6 +8,7 @@ import com.alinso.popcon.entity.dto.message.ConversationDto;
 import com.alinso.popcon.entity.dto.message.MessageDto;
 import com.alinso.popcon.entity.dto.user.ProfileInfoForUpdateDto;
 import com.alinso.popcon.entity.enums.Gender;
+import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.DeletedConversationRepository;
 import com.alinso.popcon.repository.MessageRepository;
 import com.alinso.popcon.util.DateUtil;
@@ -33,14 +34,20 @@ public class MessageService {
 
     @Autowired
     DeletedConversationRepository deletedConversationRepository;
+
     @Autowired
     ModelMapper modelMapper;
 
+    @Autowired
+    BlockService blockService;
 
     public MessageDto send(MessageDto messageDto) {
         Message message = modelMapper.map(messageDto, Message.class);
         User writer = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User reader = userService.findEntityById(messageDto.getReader().getId());
+
+        if (blockService.isThereABlock(reader.getId()))
+            throw new UserWarningException("Erişim Yok");
 
 
 //        if (blockService.isThereABlock(reader.getId()))

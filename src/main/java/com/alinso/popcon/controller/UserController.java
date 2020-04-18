@@ -4,7 +4,7 @@ import com.alinso.popcon.entity.User;
 import com.alinso.popcon.entity.dto.user.ChangePasswordDto;
 import com.alinso.popcon.entity.dto.user.ProfileDto;
 import com.alinso.popcon.entity.dto.user.ProfileInfoForUpdateDto;
-import com.alinso.popcon.entity.dto.photo.SinglePhotoUploadDto;
+import com.alinso.popcon.entity.dto.photo.PhotoFormDto;
 import com.alinso.popcon.security.JwtTokenProvider;
 import com.alinso.popcon.security.SecurityConstants;
 import com.alinso.popcon.security.payload.JWTLoginSucessReponse;
@@ -23,6 +23,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("user")
@@ -113,7 +114,11 @@ public class UserController {
         userService.forgottePasswordSendPass(phone);
         return new ResponseEntity<>("mail sent", HttpStatus.OK);
     }
-
+    @GetMapping("search/{searchText}/{pageNum}")
+    public ResponseEntity<?> search(@PathVariable("searchText") String searchText,@PathVariable("pageNum") Integer pageNum) {
+        List<ProfileDto> profileDtos = userService.searchUser(searchText,pageNum);
+        return new ResponseEntity<>(profileDtos, HttpStatus.OK);
+    }
 
     @GetMapping("/myProfileInfoForUpdate")
     public ResponseEntity<?> myProfileInfoForUpdate() {
@@ -123,14 +128,14 @@ public class UserController {
     }
 
     @PostMapping("/updateProfilePic")
-    public ResponseEntity<?> changeProfilePic(SinglePhotoUploadDto singlePhotoUploadDto, BindingResult result) {
+    public ResponseEntity<?> changeProfilePic(PhotoFormDto photoFormDto, BindingResult result) {
 
-        profilePicValidator.validate(singlePhotoUploadDto, result);
+        profilePicValidator.validate(photoFormDto, result);
 
         ResponseEntity<?> errorMap = mapValidationErrorUtil.MapValidationService(result);
         if (errorMap != null) return errorMap;
 
-        String picName = userService.updateProfilePic(singlePhotoUploadDto);
+        String picName = userService.updateProfilePic(photoFormDto);
         return new ResponseEntity<String>(picName, HttpStatus.ACCEPTED);
     }
 

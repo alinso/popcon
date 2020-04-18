@@ -1,13 +1,10 @@
 package com.alinso.popcon.service;
 
-import com.alinso.popcon.entity.Photo;
-import com.alinso.popcon.entity.PhotoCategory;
-import com.alinso.popcon.entity.User;
+import com.alinso.popcon.entity.*;
 import com.alinso.popcon.entity.dto.photo.PhotoDto;
-import com.alinso.popcon.entity.dto.photo.PhotoUpdateDto;
-import com.alinso.popcon.entity.dto.photo.SinglePhotoUploadDto;
-import com.alinso.popcon.repository.PhotoCategoryRepository;
-import com.alinso.popcon.repository.PhotoRepository;
+import com.alinso.popcon.entity.dto.photo.PhotoFormDto;
+import com.alinso.popcon.exception.UserWarningException;
+import com.alinso.popcon.repository.*;
 import com.alinso.popcon.util.FileStorageUtil;
 import com.alinso.popcon.util.UserUtil;
 import org.apache.commons.io.FilenameUtils;
@@ -31,6 +28,15 @@ public class PhotoService {
     @Autowired
     PhotoRepository photoRepository;
 
+    @Autowired
+    LikeRepository likeRepository;
+
+    @Autowired
+    VoteRepository voteRepository;
+
+    @Autowired
+    ContestService contestService;
+
 
     @Autowired
     FileStorageUtil fileStorageUtil;
@@ -38,67 +44,97 @@ public class PhotoService {
     @Autowired
     PhotoCategoryRepository photoCategoryRepository;
 
-    public List<PhotoDto> getByUserId(Long id){
-        User u  =userService.findEntityById(id);
-        List<Photo> photos=  photoRepository.getByUser(u);
+    @Autowired
+    CommentRepository commentRepository;
+
+    @Autowired
+    BlockService blockService;
+
+    public List<PhotoDto> getByUserId(Long id) {
+        User u = userService.findEntityById(id);
+
+        if (blockService.isThereABlock(u.getId()))
+            throw new UserWarningException("Erişim Yok");
+
+        List<Photo> photos = photoRepository.getByUser(u);
         return toDtoList(photos);
     }
 
-    public List<PhotoCategory> getPhotoCategories(){
-        List<PhotoCategory> photoCategoryList =  photoCategoryRepository.findAll();
+    public List<PhotoCategory> getPhotoCategories() {
+        List<PhotoCategory> photoCategoryList = photoCategoryRepository.findAll();
         return photoCategoryList;
     }
 
 
-    public String uploadPhoto(SinglePhotoUploadDto singlePhotoUploadDto) {
+    public Long uploadPhoto(PhotoFormDto photoFormDto) {
 
-        String extension = FilenameUtils.getExtension(singlePhotoUploadDto.getFile().getOriginalFilename());
+        String extension = FilenameUtils.getExtension(photoFormDto.getFile().getOriginalFilename());
         String newName = fileStorageUtil.makeFileName() + "." + extension;
-        fileStorageUtil.storeFile(singlePhotoUploadDto.getFile(), newName, true);
+        fileStorageUtil.storeFile(photoFormDto.getFile(), newName, true);
 
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Photo p = new Photo();
         p.setUser(loggedUser);
+        p.setGender(photoFormDto.getGender());
         p.setFileName(newName);
-        p.setCaption(singlePhotoUploadDto.getCaption());
+        p.setCaption(photoFormDto.getCaption());
 
-        p.setCategories(setCategories(singlePhotoUploadDto.getCategoryIds()));
+        p.setCategories(setCategories(photoFormDto.getCategoryIds()));
 
         photoRepository.save(p);
-        return newName;
+        return p.getId();
     }
 
 
-    public List<PhotoCategory> setCategories(List<Long> ids){
-        List<PhotoCategory> photoCategoryList =  new ArrayList<>();
-        for(Long catId:ids){
+    public List<PhotoCategory> setCategories(List<Long> ids) {
+        List<PhotoCategory> photoCategoryList = new ArrayList<>();
+        for (Long catId : ids) {
             PhotoCategory photoCategory = photoCategoryRepository.findById(catId).get();
             photoCategoryList.add(photoCategory);
         }
         return photoCategoryList;
     }
 
-    public List<PhotoDto> toDtoList(List<Photo> photoList){
+    public List<PhotoDto> toDtoList(List<Photo> photoList) {
         List<PhotoDto> dtoList = new ArrayList<>();
-        for(Photo p:photoList){
+        for (Photo p : photoList) {
             dtoList.add(toDto(p));
         }
         return dtoList;
     }
 
-    public PhotoDto toDto(Photo p){
-            PhotoDto dto = modelMapper.map(p, PhotoDto.class);
-            dto.setUser(userService.toDto(p.getUser()));
-            return dto;
+    public PhotoDto toDto(Photo p) {
+        User loggedUser  =(User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        PhotoDto dto = modelMapper.map(p, PhotoDto.class);
+        dto.setUser(userService.toDto(p.getUser()));
+        dto.setLikeCount(likeRepository.getLikesOfPhoto(p));
+        dto.setCommentCount(commentRepository.getCommentCountOfPhoto(p));
+
+        PhotoLike photoLike  =likeRepository.findByLikerAndPhoto(loggedUser,p);
+
+        if(photoLike!=null)
+            dto.setDidILikeIt(true);
+        else
+            dto.setDidILikeIt(false);
+
+        return dto;
     }
 
 
-    public void delete(String photoName){
+    public void delete(String photoName) {
         Photo photo = photoRepository.findByFileName(photoName);
         UserUtil.checkUserOwner(photo.getUser().getId());
 
-        if(photo!=null){
+        if (photo != null) {
             fileStorageUtil.deleteFile(photoName);
+
+            List<Vote> allVotesOfPhoto = voteRepository.findAllVotesOfPhoto(photo);
+            voteRepository.deleteAll(allVotesOfPhoto);
+
+            List<CustomContest> customContestList = contestService.findAllContestsOfPhoto(photo);
+            for (CustomContest c : customContestList) {
+                contestService.deleteCustomContest(c.getId());
+            }
             photoRepository.delete(photo);
         }
     }
@@ -108,14 +144,33 @@ public class PhotoService {
         return toDto(p);
     }
 
-    public void update(PhotoUpdateDto photoUpdateDto) {
+    public void update(PhotoFormDto photoUpdateDto) {
 
-        Photo p  =photoRepository.getById(photoUpdateDto.getId());
+        Photo p = photoRepository.getById(photoUpdateDto.getId());
         UserUtil.checkUserOwner(p.getUser().getId());
         p.setCategories(setCategories(photoUpdateDto.getCategoryIds()));
         p.setCaption(photoUpdateDto.getCaption());
+        p.setGender(photoUpdateDto.getGender());
 
         photoRepository.save(p);
+    }
+
+    public void like(Long id) {
+
+        User liker = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Photo photo = photoRepository.getById(id);
+        PhotoLike like = likeRepository.findByLikerAndPhoto(liker, photo);
+
+        if (like != null) {
+            likeRepository.delete(like);
+            contestService.setPercent(photo);
+        } else {
+            like = new PhotoLike();
+            like.setLiker(liker);
+            like.setPhoto(photo);
+            likeRepository.save(like);
+            contestService.setPercent(photo);
+        }
     }
 }
 

@@ -2,8 +2,7 @@ package com.alinso.popcon.controller;
 
 import com.alinso.popcon.entity.PhotoCategory;
 import com.alinso.popcon.entity.dto.photo.PhotoDto;
-import com.alinso.popcon.entity.dto.photo.PhotoUpdateDto;
-import com.alinso.popcon.entity.dto.photo.SinglePhotoUploadDto;
+import com.alinso.popcon.entity.dto.photo.PhotoFormDto;
 import com.alinso.popcon.service.PhotoService;
 import com.alinso.popcon.util.MapValidationErrorUtil;
 import com.alinso.popcon.validator.PhotoUpdateValidator;
@@ -40,16 +39,22 @@ public class PhotoController {
         return new ResponseEntity<>(photoDtoList, HttpStatus.CREATED);
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<?> upload(SinglePhotoUploadDto singlePhotoUploadDto, BindingResult result) {
+    @GetMapping("like/{id}")
+    public ResponseEntity<?> like(@PathVariable("id") Long id) {
+        photoService.like(id);
+        return new ResponseEntity<>("OK", HttpStatus.CREATED);
+    }
 
-        photoValidator.validate(singlePhotoUploadDto, result);
+    @PostMapping("/upload")
+    public ResponseEntity<?> upload(PhotoFormDto photoFormDto, BindingResult result) {
+
+        photoValidator.validate(photoFormDto, result);
 
         ResponseEntity<?> errorMap = mapValidationErrorUtil.MapValidationService(result);
         if (errorMap != null) return errorMap;
 
-        photoService.uploadPhoto(singlePhotoUploadDto);
-        return new ResponseEntity<String>("uploaded", HttpStatus.ACCEPTED);
+        Long photoId  =photoService.uploadPhoto(photoFormDto);
+        return new ResponseEntity<Long>(photoId, HttpStatus.ACCEPTED);
     }
     @PostMapping("delete")
     public ResponseEntity<?> delete(@RequestBody Map<String,String> file) { //send via fileName param
@@ -73,7 +78,7 @@ public class PhotoController {
     }
 
     @PostMapping("update")
-    public ResponseEntity<?> update(PhotoUpdateDto photoUpdateDto, BindingResult result) {
+    public ResponseEntity<?> update(PhotoFormDto photoUpdateDto, BindingResult result) {
 
         photoUpdateValidator.validate(photoUpdateDto, result);
 

@@ -43,6 +43,7 @@ public class MessageController {
     }
 
 
+
     @GetMapping("/conversations/{pageNum}")
     public ResponseEntity<?> conversations(@PathVariable("pageNum") Integer pageNum){
         List<ConversationDto> conversationDtos = messageService.getMyConversations(pageNum);

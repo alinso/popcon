@@ -25,6 +25,8 @@ public class ProfileInfoForUpdateDto {
     @Enumerated(EnumType.ORDINAL)
     private Gender gender;
 
+    private Gender preferredGender;
+
     private String bDateString;
 
     public String getName() {
@@ -81,5 +83,13 @@ public class ProfileInfoForUpdateDto {
 
     public void setbDateString(String bDateString) {
         this.bDateString = bDateString;
+    }
+
+    public Gender getPreferredGender() {
+        return preferredGender;
+    }
+
+    public void setPreferredGender(Gender preferredGender) {
+        this.preferredGender = preferredGender;
     }
 }

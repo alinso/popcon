@@ -66,6 +66,11 @@ public class User extends BaseEntity implements UserDetails {
     @Column
     private String bio;
 
+    @Column
+    @Enumerated(EnumType.ORDINAL)
+    private Gender preferredGender;
+
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -233,5 +238,13 @@ public class User extends BaseEntity implements UserDetails {
 
     public void setPhoneVerified(Boolean phoneVerified) {
         isPhoneVerified = phoneVerified;
+    }
+
+    public Gender getPreferredGender() {
+        return preferredGender;
+    }
+
+    public void setPreferredGender(Gender preferredGender) {
+        this.preferredGender = preferredGender;
     }
 }

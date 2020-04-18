@@ -2,6 +2,7 @@ package com.alinso.popcon.entity.dto.photo;
 
 import com.alinso.popcon.entity.PhotoCategory;
 import com.alinso.popcon.entity.dto.user.ProfileDto;
+import com.alinso.popcon.entity.enums.Gender;
 
 import java.util.List;
 
@@ -15,9 +16,18 @@ public class PhotoDto {
 
     private Integer percent;
 
+    private Gender gender;
+
     private ProfileDto user;
 
     private List<PhotoCategory> categories;
+
+    private Integer likeCount;
+
+    private Integer commentCount;
+
+    private Boolean didILikeIt;
+
 
     public String getFileName() {
         return fileName;
@@ -65,5 +75,37 @@ public class PhotoDto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(Integer likeCount) {
+        this.likeCount = likeCount;
+    }
+
+    public Boolean getDidILikeIt() {
+        return didILikeIt;
+    }
+
+    public void setDidILikeIt(Boolean didILikeIt) {
+        this.didILikeIt = didILikeIt;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public Integer getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(Integer commentCount) {
+        this.commentCount = commentCount;
     }
 }

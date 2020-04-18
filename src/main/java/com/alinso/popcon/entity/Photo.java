@@ -1,6 +1,7 @@
 package com.alinso.popcon.entity;
 
 
+import com.alinso.popcon.entity.enums.Gender;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
@@ -24,6 +25,10 @@ public class Photo extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String caption;
+
+    @Column
+    @Enumerated(EnumType.ORDINAL)
+    private Gender gender;
 
 
     @Column
@@ -68,5 +73,13 @@ public class Photo extends BaseEntity {
 
     public void setCategories(List<PhotoCategory> categories) {
         this.categories = categories;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 }
