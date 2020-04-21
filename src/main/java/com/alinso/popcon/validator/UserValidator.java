@@ -40,6 +40,10 @@ public class UserValidator implements Validator {
             errors.rejectValue("username", "Match", "Bu kullanıcı adı alınmış");
         }
 
+        if(user.getUsername().length()>20){
+            errors.rejectValue("username","","Kullanıcı adı maksimum 20 karakter olabilir");
+        }
+
         if (user.getUsername().length() < 3) {
             errors.rejectValue("username", "Match", "Kullanıcı adı en az 3 karakter olmalıdır");
         }

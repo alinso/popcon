@@ -6,6 +6,7 @@ import com.alinso.popcon.entity.dto.user.ChangePasswordDto;
 import com.alinso.popcon.entity.dto.user.ProfileDto;
 import com.alinso.popcon.entity.dto.user.ProfileInfoForUpdateDto;
 import com.alinso.popcon.entity.dto.photo.PhotoFormDto;
+import com.alinso.popcon.entity.enums.Gender;
 import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.CityRepository;
 import com.alinso.popcon.repository.UserRepository;
@@ -56,8 +57,15 @@ public class UserService {
         newUser.setSurname("");
         newUser.setRole("ROLE_USER");
         newUser.setBio("");
+        newUser.setPhoneVerified(false);
         newUser.setProfilePicName("user.png");
         newUser.setEnabled(true);
+        if(newUser.getGender()== Gender.FEMALE)
+            newUser.setPreferredGender(Gender.MALE);
+        if(newUser.getGender()==Gender.MALE)
+            newUser.setGender(Gender.FEMALE);
+
+
         User user = userRepository.save(newUser);
         return user;
     }

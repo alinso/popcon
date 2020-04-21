@@ -21,6 +21,8 @@ public class ProfileDto {
 
     private City city;
 
+    private Boolean isPhoneVerified;
+
     private Gender gender;
 
     private Integer age;
@@ -106,5 +108,13 @@ public class ProfileDto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Boolean getPhoneVerified() {
+        return isPhoneVerified;
+    }
+
+    public void setPhoneVerified(Boolean phoneVerified) {
+        isPhoneVerified = phoneVerified;
     }
 }

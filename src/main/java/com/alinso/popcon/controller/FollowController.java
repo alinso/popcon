@@ -21,25 +21,31 @@ public class FollowController {
     FollowService followService;
 
     @GetMapping("follow/{leaderId}")
-    public ResponseEntity<?> follow(@PathVariable("leaderId") Long leaderId){
+    public ResponseEntity<?> follow(@PathVariable("leaderId") Long leaderId) {
         Boolean result = followService.follow(leaderId);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("isFollowing/{leaderId}")
-    public ResponseEntity<?> isFollowing(@PathVariable("leaderId") Long leaderId){
+    public ResponseEntity<?> isFollowing(@PathVariable("leaderId") Long leaderId) {
         Boolean result = followService.isFollowing(leaderId);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 
     @GetMapping("myFollowings")
-    public ResponseEntity<?> myFollowings(){
+    public ResponseEntity<?> myFollowings() {
 
-        List<ProfileDto> profileDtoList =followService.findMyFollowings();
+        List<ProfileDto> profileDtoList = followService.findMyFollowings();
         return new ResponseEntity<>(profileDtoList, HttpStatus.OK);
     }
 
+    @GetMapping("followerCount/{id}")
+    public ResponseEntity<?> followerCount(@PathVariable("id") Long id) {
+
+        Integer fc = followService.followerCount(id);
+        return new ResponseEntity<>(fc, HttpStatus.OK);
+    }
 
 
 }

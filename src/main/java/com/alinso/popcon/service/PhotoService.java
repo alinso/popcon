@@ -78,6 +78,7 @@ public class PhotoService {
         p.setGender(photoFormDto.getGender());
         p.setFileName(newName);
         p.setCaption(photoFormDto.getCaption());
+        p.setPercent(0);
 
         p.setCategories(setCategories(photoFormDto.getCategoryIds()));
 

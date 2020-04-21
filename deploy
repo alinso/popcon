@@ -1,0 +1,15 @@
+mv src/main/resources/application.properties src/main/resources/application_local.properties
+mv application_deploy.properties src/main/resources/application.properties
+mvn clean install
+mv src/main/resources/application.properties application_deploy.properties
+mv src/main/resources/application_local.properties src/main/resources/application.properties
+
+
+mv target/popcon-0.0.1-SNAPSHOT.jar  popcon.jar
+gcloud compute scp popcon.jar alinso@afserver2:/tmp
+rm popcon.jar
+gcloud compute ssh alinso@afserver2
+sudo service popcon stop
+sudo mv /tmp/popcon.jar /opt/popcon/popcon.jar
+sudo service popcon start
+exit

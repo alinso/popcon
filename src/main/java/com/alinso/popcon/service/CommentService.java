@@ -9,6 +9,7 @@ import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.CommentRepository;
 import com.alinso.popcon.repository.PhotoRepository;
 import com.alinso.popcon.util.UserUtil;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -79,10 +80,13 @@ public class CommentService {
     }
 
     public void delete(Long id) {
-        Comment comment = commentRepository.getOne(id);
+        Comment comment = commentRepository.findById(id).get();
 
-        UserUtil.checkUserOwner(id);
-        UserUtil.checkUserOwner(comment.getPhoto().getId());
+
+        Photo photoWithOwner  = photoRepository.getWithOwner(comment.getPhoto().getId());
+
+        UserUtil.checkUserOwner(comment.getWriter().getId());
+        UserUtil.checkUserOwner(photoWithOwner.getUser().getId());
 
         commentRepository.delete(comment);
     }

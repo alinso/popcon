@@ -51,10 +51,10 @@ public class ContestService {
 
     private List<Photo>getDuelPhotos(Long catId){
 
-        User loggedUser  =(User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            User loggedUser  =(User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Boolean genderImportant=false;
-        if(catId==1 || catId==2 || catId==5){
+        if(catId==1 || catId==2 || catId==3){
             genderImportant=true;
         }
         PhotoCategory photoCategory = photoCategoryRepository.findById(catId).get();
@@ -63,33 +63,36 @@ public class ContestService {
         List<Photo> allPhotos =new ArrayList<>();
 
 
-
         //select duel type
         Random randomDuelType = new Random();
         Integer duelTypeInt = randomDuelType.nextInt(10);
         Pageable pageable = PageRequest.of(0, 1000);
+
+
+
+
             if (duelTypeInt <= 3) {
                 allPhotos = photoRepository.findByCategoriesOrderByIdDesc(photoCategory, pageable);
             } else if (duelTypeInt > 3 && duelTypeInt <= 5) {
                 allPhotos = photoRepository.findByCategoriesOrderByPercentDesc(photoCategory, pageable);
-            } else if (duelTypeInt > 5 && duelTypeInt <= 7) {
+            } else if (duelTypeInt > 5 && duelTypeInt <= 7 ) {
                 List<User> followings = followRepository.findUsersFollowedByTheUser(loggedUser);
                 for (User following : followings) {
                     allPhotos.addAll(photoRepository.getByUser(following));
                 }
-            } else if (duelTypeInt > 7) {
+            } else {
                 allPhotos = photoRepository.findByCategories(photoCategory);
             }
 
-
-        if(!genderImportant) {
-            for(Photo p:allPhotos){
+        if(genderImportant ) {
+            Iterator<Photo> i = allPhotos.iterator();
+            while(i.hasNext()){
+                Photo p=i.next();
                 if(p.getGender()!=loggedUser.getPreferredGender()){
-                    allPhotos.remove(p);
+                    i.remove();
                 }
             }
         }
-
 
         return allPhotos;
 
@@ -97,8 +100,13 @@ public class ContestService {
 
 
     public List<PhotoDto> getDuelByCategory(Long catId) {
+        List<Photo> allPhotos= new ArrayList<>();
+        while(true){
+             allPhotos =getDuelPhotos(catId);
+             if(allPhotos.size()>2)
+                 break;
+        }
 
-        List<Photo> allPhotos  =getDuelPhotos(catId);
         User  loggedUser= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Random random = new Random();
@@ -109,12 +117,16 @@ public class ContestService {
         duel.add(allPhotos.get(index1));
         duel.add(allPhotos.get(index2));
 
-        ToBeVoted toBeVoted =  new ToBeVoted();
-        toBeVoted.setPhoto1(allPhotos.get(index1));
-        toBeVoted.setPhoto2(allPhotos.get(index2));
-        toBeVoted.setVoter(loggedUser);
+        ToBeVoted toBeVoted  = toBeVotedRepository.findExactToBeVote(allPhotos.get(index1),loggedUser,allPhotos.get(index2));
+        if(toBeVoted==null){
+             toBeVoted =  new ToBeVoted();
+            toBeVoted.setPhoto1(allPhotos.get(index1));
+            toBeVoted.setPhoto2(allPhotos.get(index2));
+            toBeVoted.setVoter(loggedUser);
 
-        toBeVotedRepository.save(toBeVoted);
+            toBeVotedRepository.save(toBeVoted);
+        }
+
 
         return photoService.toDtoList(duel);
     }
@@ -133,6 +145,21 @@ public class ContestService {
     }
 
 
+    private Boolean canIVote(Photo photo1,Photo photo2){
+        User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        ToBeVoted toBeVotedCombination1  = toBeVotedRepository.findExactToBeVote(photo1,loggedUser,photo2);
+        ToBeVoted toBeVotedCombination2  = toBeVotedRepository.findExactToBeVote(photo2,loggedUser,photo1);
+        if(toBeVotedCombination1==null && toBeVotedCombination2==null){
+            return false; //if there is no ask for these photos the user cannot vote
+        }
+        if(toBeVotedCombination1!=null)
+            toBeVotedRepository.delete(toBeVotedCombination1);
+        if(toBeVotedCombination2!=null)
+            toBeVotedRepository.delete(toBeVotedCombination2);
+
+        return true;
+    }
+
     // as a security issue you can check if user voted any of these photos recently(last 10 votes maybe?)
     public void vote(Long selectedId, Long otherId) {
 
@@ -140,12 +167,9 @@ public class ContestService {
         Photo selected = photoRepository.getOne(selectedId);
         Photo other = photoRepository.getOne(otherId);
 
-        ToBeVoted toBeVoted  = toBeVotedRepository.findExactToBeVote(other,loggedUser,selected);
-        if(toBeVoted==null){
-            return; //if there is no ask for these photos the user cannot vote
-        }
-        toBeVotedRepository.delete(toBeVoted);
 
+        if(!canIVote(other,selected))
+            return;
 
         //if user voted as same dont calculate it as second vote
         Vote vInDb = voteRepository.findExactVote(other, loggedUser, selected);

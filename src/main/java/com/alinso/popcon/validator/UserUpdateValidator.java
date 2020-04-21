@@ -30,6 +30,12 @@ public class UserUpdateValidator implements Validator {
         if(oldUserUsesThisUsername!=null && oldUserUsesThisUsername.getId()!=loggedUser.getId()){
             errors.rejectValue("username", "Match", "Bu kullanıcı adı alınmış");
         }
+        if(user.getUsername().length()>20){
+            errors.rejectValue("username","","Kullanıcı adı maksimum 20 karakter olabilir");
+        }
+        if(user.getBio().length()>340){
+            errors.rejectValue("username","","Bio maksimum 340 karakter olabilir");
+        }
 
     }
 }

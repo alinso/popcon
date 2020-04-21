@@ -14,7 +14,7 @@ public class Photo extends BaseEntity {
     @Column
     private String fileName;
 
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
+    @ManyToOne
     private User user;
 
 

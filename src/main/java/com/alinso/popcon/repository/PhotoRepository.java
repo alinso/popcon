@@ -38,4 +38,6 @@ public interface PhotoRepository extends JpaRepository<Photo,Long> {
     @Query("select p  from Photo p  order by p.percent desc ")
     List<Photo> getBest(Pageable pageable);
 
+    @Query("select p from Photo p join fetch p.user where p.id=:id")
+    Photo getWithOwner(@Param("id") Long id);
 }

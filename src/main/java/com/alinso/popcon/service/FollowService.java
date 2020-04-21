@@ -68,4 +68,10 @@ public class FollowService {
         return profileDtos;
     }
 
+    public Integer followerCount(Long id) {
+
+        User user  = userService.findEntityById(id);
+        Integer followerCount  =followRepository.findFollowerCount(user);
+        return followerCount;
+    }
 }
