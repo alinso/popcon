@@ -36,10 +36,10 @@ public class CommentController {
         return new ResponseEntity<>("Ok", HttpStatus.ACCEPTED);
     }
 
-    @GetMapping("/getCommentsByPhotoId/{id}")
-    public ResponseEntity<?> save(@PathVariable("id") Long id){
+    @GetMapping("/getCommentsByPhotoId/{id}/{pageNum}")
+    public ResponseEntity<?> save(@PathVariable("id") Long id, @PathVariable("pageNum") Integer pageNumm){
 
-        List<CommentDto> commentDtoList =commentService.getCommentsByPhotoId(id);
+        List<CommentDto> commentDtoList =commentService.getCommentsByPhotoId(id,pageNumm);
 
         return new ResponseEntity<>(commentDtoList, HttpStatus.ACCEPTED);
     }

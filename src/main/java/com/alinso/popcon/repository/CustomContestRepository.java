@@ -3,6 +3,7 @@ package com.alinso.popcon.repository;
 import com.alinso.popcon.entity.CustomContest;
 import com.alinso.popcon.entity.Photo;
 import com.alinso.popcon.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +21,7 @@ public interface CustomContestRepository extends JpaRepository<CustomContest, Lo
     CustomContest findByPhotos(@Param("photo1") Photo photo1, @Param("photo2") Photo photo2);
 
     @Query("select c from CustomContest c where c.creator=:creator")
-    List<CustomContest> findByCreator(@Param("creator")User creator);
+    List<CustomContest> findByCreator(@Param("creator") User creator, Pageable pageable);
 
     @Query("select c from CustomContest c where c.photo2=:photo or c.photo1=:photo")
     List<CustomContest> findAllContestsOfPhoto(@Param("photo")Photo photo);

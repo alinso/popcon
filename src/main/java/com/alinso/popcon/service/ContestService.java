@@ -255,10 +255,12 @@ public class ContestService {
         return photoService.toDtoList(duel);
     }
 
-    public List<CustomContestDto> getCustomContestResults() {
+    public List<CustomContestDto> getCustomContestResults(Integer pagenum) {
 
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<CustomContest> customContestList = customContestRepository.findByCreator(loggedUser);
+
+        Pageable pageable = PageRequest.of(pagenum,5);
+        List<CustomContest> customContestList = customContestRepository.findByCreator(loggedUser,pageable);
         List<CustomContestDto> customContestDtoList = new ArrayList<>();
         for (CustomContest c : customContestList) {
             CustomContestDto customContestDto = new CustomContestDto();
@@ -277,7 +279,6 @@ public class ContestService {
             customContestDto.setPhoto2VoteCount(photo2VoteCount);
 
             customContestDtoList.add(customContestDto);
-
         }
 
         return customContestDtoList;
@@ -285,6 +286,8 @@ public class ContestService {
 
 
     public void voteCustomContest(Long selectedId, Long otherId) {
+        User loggedUser  = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         Photo selectedPhoto = photoRepository.findById(selectedId).get();
         Photo otherPhoto = photoRepository.findById(otherId).get();
 
@@ -302,6 +305,7 @@ public class ContestService {
         customContestVote.setCustomContest(customContest);
         customContestVote.setSelectedPhoto(selectedPhoto);
         customContestVote.setOtherPhoto(otherPhoto);
+        customContestVote.setVoter(loggedUser);
 
         customContestVoteRepository.save(customContestVote);
 
@@ -331,9 +335,9 @@ public class ContestService {
         return customContestList;
     }
 
-    public List<PhotoDto> popconBest() {
+    public List<PhotoDto> popconBest(Integer pageNum) {
 
-        Pageable pageable = PageRequest.of(0,100);
+        Pageable pageable = PageRequest.of(pageNum,20);
         List<Photo> bestPhotosOfDay = photoRepository.getBest(pageable);
         return photoService.toDtoList(bestPhotosOfDay);
     }

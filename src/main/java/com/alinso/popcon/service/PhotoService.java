@@ -10,6 +10,9 @@ import com.alinso.popcon.util.UserUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -50,13 +53,16 @@ public class PhotoService {
     @Autowired
     BlockService blockService;
 
-    public List<PhotoDto> getByUserId(Long id) {
+    public List<PhotoDto> getByUserId(Long id, Integer pageNum) {
         User u = userService.findEntityById(id);
 
         if (blockService.isThereABlock(u.getId()))
             throw new UserWarningException("Erişim Yok");
 
-        List<Photo> photos = photoRepository.getByUser(u);
+
+        Pageable pageable  = PageRequest.of(pageNum,12);
+
+        List<Photo> photos = photoRepository.getByUser(u,pageable);
         return toDtoList(photos);
     }
 

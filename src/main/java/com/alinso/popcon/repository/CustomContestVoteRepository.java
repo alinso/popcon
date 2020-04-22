@@ -16,7 +16,7 @@ public interface CustomContestVoteRepository extends JpaRepository<CustomContest
     @Query("select count(v) from CustomContestVote  v where v.selectedPhoto=:photo1 and v.customContest=:customContest")
     Integer findByCustomContestAndPhoto1(@Param("customContest") CustomContest customContest, @Param("photo1") Photo photo1);
 
-    @Query("select count(v) from CustomContestVote  v where v.otherPhoto=:photo2 and v.customContest=:customContest")
+    @Query("select count(v) from CustomContestVote  v where v.selectedPhoto=:photo2 and v.customContest=:customContest")
     Integer findByCustomContestAndPhoto2(@Param("customContest") CustomContest customContest, @Param("photo2") Photo photo2);
 
     List<CustomContestVote> findByCustomContest(CustomContest customContest);

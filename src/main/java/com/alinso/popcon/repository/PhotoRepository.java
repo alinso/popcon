@@ -40,4 +40,7 @@ public interface PhotoRepository extends JpaRepository<Photo,Long> {
 
     @Query("select p from Photo p join fetch p.user where p.id=:id")
     Photo getWithOwner(@Param("id") Long id);
+
+    @Query("select p from Photo p where p.user=:user")
+    List<Photo> getByUser(@Param("user")User u,  Pageable pageable);
 }

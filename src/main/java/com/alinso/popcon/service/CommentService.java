@@ -11,9 +11,11 @@ import com.alinso.popcon.repository.PhotoRepository;
 import com.alinso.popcon.util.UserUtil;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,9 +56,12 @@ public class CommentService {
     }
 
 
-    public List<CommentDto> getCommentsByPhotoId(Long id) {
+    public List<CommentDto> getCommentsByPhotoId(Long id,Integer pageNum){
+
+        PageRequest pageable  = PageRequest.of(pageNum,20);
+
         Photo photo = photoRepository.getById(id);
-        List<Comment> commentList = commentRepository.getCommentsByPhoto(photo);
+        List<Comment> commentList = commentRepository.getCommentsByPhoto(photo,pageable);
         return toDtoList(commentList);
     }
 
@@ -84,9 +89,11 @@ public class CommentService {
 
 
         Photo photoWithOwner  = photoRepository.getWithOwner(comment.getPhoto().getId());
+        User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        UserUtil.checkUserOwner(comment.getWriter().getId());
-        UserUtil.checkUserOwner(photoWithOwner.getUser().getId());
+        if(comment.getWriter().getId()!= loggedUser.getId() && photoWithOwner.getUser().getId()!=loggedUser.getId()){
+            throw new UserWarningException("Yetkin yok");
+        }
 
         commentRepository.delete(comment);
     }

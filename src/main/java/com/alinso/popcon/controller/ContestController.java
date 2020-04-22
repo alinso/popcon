@@ -49,17 +49,17 @@ public class ContestController {
         return new ResponseEntity<>(photoDtos, HttpStatus.CREATED);
     }
 
-    @GetMapping("/best")
-    public ResponseEntity<?> best() {
+    @GetMapping("/best/{pageNum}")
+    public ResponseEntity<?> best(@PathVariable("pageNum") Integer pageNum) {
 
-        List<PhotoDto> photoDtos  =contestService.popconBest();
+        List<PhotoDto> photoDtos  =contestService.popconBest(pageNum);
         return new ResponseEntity<>(photoDtos, HttpStatus.CREATED);
     }
 
-    @GetMapping("/getCustomContestResults")
-    public ResponseEntity<?> customContestResults() {
+    @GetMapping("/getCustomContestResults/{pageNum}")
+    public ResponseEntity<?> customContestResults(@PathVariable("pageNum")Integer pagenum) {
 
-       List<CustomContestDto> customContestDtoList  =contestService.getCustomContestResults();
+       List<CustomContestDto> customContestDtoList  =contestService.getCustomContestResults(pagenum);
         return new ResponseEntity<>(customContestDtoList, HttpStatus.CREATED);
     }
 

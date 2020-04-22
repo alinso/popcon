@@ -33,9 +33,9 @@ public class PhotoController {
     @Autowired
     MapValidationErrorUtil mapValidationErrorUtil;
 
-    @GetMapping("/album/{id}")
-    public ResponseEntity<?> album(@PathVariable("id") Long id) {
-        List<PhotoDto> photoDtoList = photoService.getByUserId(id);
+    @GetMapping("/album/{id}/{pageNum}")
+    public ResponseEntity<?> album(@PathVariable("id") Long id, @PathVariable("pageNum") Integer pageNum) {
+        List<PhotoDto> photoDtoList = photoService.getByUserId(id,pageNum);
         return new ResponseEntity<>(photoDtoList, HttpStatus.CREATED);
     }
 
