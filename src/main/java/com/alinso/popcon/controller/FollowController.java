@@ -40,6 +40,15 @@ public class FollowController {
         return new ResponseEntity<>(profileDtoList, HttpStatus.OK);
     }
 
+    @GetMapping("myFollowers")
+    public ResponseEntity<?> myFollowers() {
+
+        List<ProfileDto> profileDtoList = followService.myFollowers();
+        return new ResponseEntity<>(profileDtoList, HttpStatus.OK);
+    }
+
+
+
     @GetMapping("followerCount/{id}")
     public ResponseEntity<?> followerCount(@PathVariable("id") Long id) {
 

@@ -25,4 +25,6 @@ public interface CustomContestRepository extends JpaRepository<CustomContest, Lo
 
     @Query("select c from CustomContest c where c.photo2=:photo or c.photo1=:photo")
     List<CustomContest> findAllContestsOfPhoto(@Param("photo")Photo photo);
+
+
 }

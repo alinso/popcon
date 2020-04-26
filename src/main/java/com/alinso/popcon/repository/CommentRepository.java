@@ -19,5 +19,6 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
     @Query("select count(c) from Comment c where c.photo=:photo")
     Integer getCommentCountOfPhoto(@Param("photo") Photo photo);
 
-
+    @Query("select c from Comment  c where c.photo=:photo")
+    List<Comment> getLatestCommentByPhoto(@Param("photo")Photo photo, Pageable pageable);
 }

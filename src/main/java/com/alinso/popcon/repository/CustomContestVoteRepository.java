@@ -3,6 +3,7 @@ package com.alinso.popcon.repository;
 import com.alinso.popcon.entity.CustomContest;
 import com.alinso.popcon.entity.CustomContestVote;
 import com.alinso.popcon.entity.Photo;
+import com.alinso.popcon.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +22,5 @@ public interface CustomContestVoteRepository extends JpaRepository<CustomContest
 
     List<CustomContestVote> findByCustomContest(CustomContest customContest);
 
+    List<CustomContestVote> findByVoter(User loggedUser);
 }

@@ -38,7 +38,10 @@ public class CommentService {
     @Autowired
     BlockService blockService;
 
-    public void save(CommentFormDto commentFormDto) {
+    @Autowired
+    NotificationService  notificationService;
+
+    public CommentDto save(CommentFormDto commentFormDto) {
 
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Photo photo = photoRepository.getById(commentFormDto.getPhotoId());
@@ -53,6 +56,9 @@ public class CommentService {
         comment.setPhoto(photo);
 
         commentRepository.save(comment);
+
+        notificationService.newCommment(photo.getUser(),comment.getId());
+        return toDto(comment);
     }
 
 

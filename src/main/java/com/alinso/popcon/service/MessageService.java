@@ -19,9 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class MessageService {
@@ -41,6 +39,45 @@ public class MessageService {
     @Autowired
     BlockService blockService;
 
+    @Autowired
+    NotificationService notificationService;
+
+    Boolean exceedDailyConversationLimit(User writer, User reader){
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        Date yesterday= calendar.getTime();
+
+        Integer readerResponseCount = messageRepository.readerResposeCount(writer,reader);
+        if(readerResponseCount>0)
+            return false;
+
+        if(reader.getGender()==Gender.MALE)
+            return false;
+
+        //how many new conversations user has started today
+        List<User> todayConversationCountWrittenByUser = messageRepository.todayConversationCountByWrittenByUser(writer,yesterday);
+        List<User>todayConversationCountReadByUser = messageRepository.todayConversationCountReadByUser(writer,yesterday);
+
+
+        //he did not write anyting today
+        if(todayConversationCountWrittenByUser==null)
+            return false;
+
+        //he has writter more than 3 times and did not get any response
+        if(todayConversationCountWrittenByUser.size()>3 && todayConversationCountReadByUser==null)
+            return true;
+
+        //he has writter less than 3 times and did not get any response
+        if(todayConversationCountWrittenByUser.size()<3 && todayConversationCountReadByUser==null)
+            return false;
+
+
+        if(todayConversationCountWrittenByUser.size()>(todayConversationCountReadByUser.size()+3))
+            return true;
+
+        return false;
+    }
+
     public MessageDto send(MessageDto messageDto) {
         Message message = modelMapper.map(messageDto, Message.class);
         User writer = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -50,8 +87,13 @@ public class MessageService {
             throw new UserWarningException("Erişim Yok");
 
 
-//        if (blockService.isThereABlock(reader.getId()))
-//            throw new UserWarningException("Erişim Yok");
+        if (!writer.getPhoneVerified() && reader.getId()!=59)
+            throw new UserWarningException("DM Göndermeden önce telefon numaranı onaylamalısın");
+
+
+        if(exceedDailyConversationLimit(writer,reader)){
+            throw  new UserWarningException("Mesaj özelliğini çok sık kullanıyorsun, 24 saat sonra tekrar dene");
+        }
 
 
         message.setWriter(writer);
@@ -62,6 +104,8 @@ public class MessageService {
 
         messageDto.setCreatedAt(DateUtil.dateToString(message.getCreatedAt(), "DD/MM HH:mm"));
         messageDto.setReader(userService.toDto(message.getReader()));
+
+        notificationService.newMessage(message.getReader());
         return messageDto;
     }
 
@@ -218,6 +262,25 @@ public class MessageService {
 
         deletedConversationRepository.save(deletedConversation);
     }
+
+
+
+    public void greetingMessageForNewUser(User reader) {
+
+        Message message = new Message();
+
+        //this will be changed in future
+
+            message.setMessage("Selammmm \uD83D\uDC4B " +
+                    "öncelikle ilk kullanıcılarımızdan olduğun için teşekkürler. En iyi fotoğrafların paylaşılıp, karşılaştırıldığı Popcon'a hoşgeldin. " +
+                    "Aklına takılan bir şey olursa yaz. Sağ alt manüdeki nasıl çalışır kısmını okumayı unutma, iyi eğlenceler \uD83C\uDF89");
+        /////
+        message.setReader(reader);
+        message.setWriter(userService.findEntityById(Long.valueOf(59)));
+
+        messageRepository.save(message);
+    }
+
 }
 
 

@@ -24,11 +24,18 @@ public class FollowService {
     @Autowired
     ModelMapper modelMapper;
 
+    @Autowired
+    NotificationService notificationService;
+
     public Boolean follow(Long leaderId){
 
         User follower  =(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User leader =userService.findEntityById(leaderId);
         Follow follow = followRepository.findFollowingByLeaderAndFollower(leader,follower);
+
+        if(!follower.getPhoneVerified())
+            return false;
+
 
         Boolean isFollowing;
         if(follow==null){
@@ -37,6 +44,8 @@ public class FollowService {
             newFollow.setLeader(leader);
             followRepository.save(newFollow);
             isFollowing=true;
+            notificationService.newFollow(leader);
+
         }else{
             followRepository.delete(follow);
             isFollowing=false;
@@ -56,16 +65,21 @@ public class FollowService {
             return true;
     }
 
+    public List<ProfileDto> myFollowers(){
+        User loggedUser  = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        List<User> followers  =  followRepository.findFollowersOfUser(loggedUser);
+
+        return userService.toDtoList(followers);
+
+    }
+
+
     public List<ProfileDto> findMyFollowings() {
         User loggedUser  =(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<User> followingUsers = followRepository.findUsersFollowedByTheUser(loggedUser);
 
-        List<ProfileDto> profileDtos  = new ArrayList<>();
-        for(User user: followingUsers){
-            profileDtos.add(userService.toDto(user));
-        }
-
-        return profileDtos;
+       return userService.toDtoList(followingUsers);
     }
 
     public Integer followerCount(Long id) {

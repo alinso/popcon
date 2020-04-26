@@ -83,6 +83,14 @@ public class UserController {
         return new ResponseEntity<ProfileDto>(profileDto, HttpStatus.CREATED);
     }
 
+    @GetMapping("/getIdOfUserName/{username}")
+    public ResponseEntity<?> getIdOfUserName(@PathVariable("username") String username) {
+
+        ProfileDto profileDto  =userService.findByUserName(username);
+        return new ResponseEntity<>(profileDto.getId(), HttpStatus.CREATED);
+    }
+
+
 
     @GetMapping("/sendPhoneVerifyCode/{phone}")
     public ResponseEntity<?> sendPhoneVerifyCode( @PathVariable("phone") String phone) {

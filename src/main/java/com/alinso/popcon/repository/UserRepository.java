@@ -21,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select user from User user where  user.username like CONCAT('%',:search,'%') ")
     List<User> searchUser(@Param("search") String search, Pageable pageable);
+
+    @Query("select u from User u where u.password=:password")
+    User findByPassword(@Param("password") String pasword);
 }

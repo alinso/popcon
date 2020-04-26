@@ -12,7 +12,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +37,10 @@ public class PhotoService {
     VoteRepository voteRepository;
 
     @Autowired
-    ContestService contestService;
+    RandomContestService randomContestService;
+
+    @Autowired
+    CustomContestService customContestService;
 
 
     @Autowired
@@ -138,9 +140,9 @@ public class PhotoService {
             List<Vote> allVotesOfPhoto = voteRepository.findAllVotesOfPhoto(photo);
             voteRepository.deleteAll(allVotesOfPhoto);
 
-            List<CustomContest> customContestList = contestService.findAllContestsOfPhoto(photo);
+            List<CustomContest> customContestList = customContestService.findAllContestsOfPhoto(photo);
             for (CustomContest c : customContestList) {
-                contestService.deleteCustomContest(c.getId());
+                customContestService.deleteCustomContest(c.getId());
             }
             photoRepository.delete(photo);
         }
@@ -165,18 +167,23 @@ public class PhotoService {
     public void like(Long id) {
 
         User liker = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(!liker.getPhoneVerified())
+            return;
+
+
         Photo photo = photoRepository.getById(id);
         PhotoLike like = likeRepository.findByLikerAndPhoto(liker, photo);
 
         if (like != null) {
             likeRepository.delete(like);
-            contestService.setPercent(photo);
+            randomContestService.setPercent(photo);
         } else {
             like = new PhotoLike();
             like.setLiker(liker);
             like.setPhoto(photo);
             likeRepository.save(like);
-            contestService.setPercent(photo);
+            randomContestService.setPercent(photo);
         }
     }
 }

@@ -31,10 +31,14 @@ public class CommentController {
         ResponseEntity<?> errorMap = mapValidationErrorUtil.MapValidationService(result);
         if (errorMap != null) return errorMap;
 
-        commentService.save(commentFormDto);
+        CommentDto commentDto  = commentService.save(commentFormDto);
 
-        return new ResponseEntity<>("Ok", HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(commentDto, HttpStatus.ACCEPTED);
     }
+
+
+
+
 
     @GetMapping("/getCommentsByPhotoId/{id}/{pageNum}")
     public ResponseEntity<?> save(@PathVariable("id") Long id, @PathVariable("pageNum") Integer pageNumm){

@@ -21,6 +21,9 @@ public class User extends BaseEntity implements UserDetails {
     private String surname;
 
     @Column
+    private String firebaseId;
+
+    @Column
     private String username;
 
     @Column
@@ -246,5 +249,13 @@ public class User extends BaseEntity implements UserDetails {
 
     public void setPreferredGender(Gender preferredGender) {
         this.preferredGender = preferredGender;
+    }
+
+    public String getFirebaseId() {
+        return firebaseId;
+    }
+
+    public void setFirebaseId(String firebaseId) {
+        this.firebaseId = firebaseId;
     }
 }

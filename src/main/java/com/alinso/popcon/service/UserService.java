@@ -47,6 +47,12 @@ public class UserService {
     @Autowired
     CityRepository cityRepository;
 
+    @Autowired
+    NotificationService notificationService;
+
+    @Autowired
+    MessageService messageService;
+
     public User register(User newUser) {
 
         newUser.setConfirmPassword("");
@@ -60,13 +66,17 @@ public class UserService {
         newUser.setPhoneVerified(false);
         newUser.setProfilePicName("user.png");
         newUser.setEnabled(true);
+
         if(newUser.getGender()== Gender.FEMALE)
             newUser.setPreferredGender(Gender.MALE);
-        if(newUser.getGender()==Gender.MALE)
-            newUser.setGender(Gender.FEMALE);
 
+        if(newUser.getGender()==Gender.MALE)
+            newUser.setPreferredGender(Gender.FEMALE);
 
         User user = userRepository.save(newUser);
+
+        notificationService.newGreetingMessage(user);
+        messageService.greetingMessageForNewUser(user);
         return user;
     }
 
@@ -76,6 +86,22 @@ public class UserService {
 
         return profileDto;
     }
+
+
+    public List<ProfileDto> toDtoList(List<User> users) {
+
+
+        List<ProfileDto> profileDtos = new ArrayList<>();
+
+        for(User u:users){
+            profileDtos.add(toDto(u));
+        }
+
+        return profileDtos;
+    }
+
+
+
 
 
     public ProfileDto findByUserName(String username) {
