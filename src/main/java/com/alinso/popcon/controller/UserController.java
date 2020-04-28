@@ -91,6 +91,12 @@ public class UserController {
     }
 
 
+    @GetMapping("/likedCount/{id}")
+    public ResponseEntity<?> sendPhoneVerifyCode( @PathVariable("id") Long userId) {
+
+        Integer likeCount  =userService.point(userId);
+        return new ResponseEntity<Integer>(likeCount, HttpStatus.CREATED);
+    }
 
     @GetMapping("/sendPhoneVerifyCode/{phone}")
     public ResponseEntity<?> sendPhoneVerifyCode( @PathVariable("phone") String phone) {

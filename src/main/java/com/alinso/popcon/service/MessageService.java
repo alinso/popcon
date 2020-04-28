@@ -271,8 +271,9 @@ public class MessageService {
 
         //this will be changed in future
 
-            message.setMessage("Selammmm \uD83D\uDC4B " +
-                    "öncelikle ilk kullanıcılarımızdan olduğun için teşekkürler. En iyi fotoğrafların paylaşılıp, karşılaştırıldığı Popcon'a hoşgeldin. " +
+            message.setMessage("Selam \uD83D\uDC4B " +
+                    "ilk kullanıcılarımızdan olduğun için teşekkürler. Fotoğraf savaşlarına hoşgeldin. Sadece harika fotoğraflardan oluşan bir platform yaratıyoruz. " +
+                    "Portre, moda, spor, doğa gibi birçok alanda fotoğraflarını paylaşabiir ve diğer fotoğrafları oylayabilirsin." +
                     "Aklına takılan bir şey olursa yaz. Sağ alt manüdeki nasıl çalışır kısmını okumayı unutma, iyi eğlenceler \uD83C\uDF89");
         /////
         message.setReader(reader);

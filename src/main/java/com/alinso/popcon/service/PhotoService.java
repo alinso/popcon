@@ -42,6 +42,8 @@ public class PhotoService {
     @Autowired
     CustomContestService customContestService;
 
+    @Autowired
+    NotificationService notificationService;
 
     @Autowired
     FileStorageUtil fileStorageUtil;
@@ -64,7 +66,7 @@ public class PhotoService {
 
         Pageable pageable  = PageRequest.of(pageNum,12);
 
-        List<Photo> photos = photoRepository.getByUser(u,pageable);
+        List<Photo> photos = photoRepository.getByUserOrderByPercent(u,pageable);
         return toDtoList(photos);
     }
 
@@ -184,6 +186,8 @@ public class PhotoService {
             like.setPhoto(photo);
             likeRepository.save(like);
             randomContestService.setPercent(photo);
+          //  notificationService.newPhotoLike(photo.getUser(),photo.getId());
+
         }
     }
 }

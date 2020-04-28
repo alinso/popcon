@@ -67,7 +67,7 @@ public class DuelService {
         duel.setStatus(DuelStatus.WAITING);
         duelRepository.save(duel);
 
-        notificationService.newPhotoWar(reader, duel);
+        notificationService.newDuelRequest(reader, duel);
 
     }
 
@@ -112,6 +112,8 @@ public class DuelService {
 
         duel.setStatus(DuelStatus.DECLINED);
         duelRepository.save(duel);
+
+        notificationService.newDuelDecline(duel.getWriter(),duel);
     }
 
     public void accept(Long photoWarId, Long readerPhotoId) {
@@ -135,6 +137,8 @@ public class DuelService {
         duel.setStatus(DuelStatus.ACCEPTED);
 
         duelRepository.save(duel);
+
+        notificationService.newDuelAccept(duel.getWriter(),duel);
     }
 
     public void vote(Long selectedId, Long otherId) {
@@ -191,13 +195,33 @@ public class DuelService {
         Random random = new Random();
         Integer index = random.nextInt(activeDuelList.size());
 
+        return setPercentOfDuelPhotoDtos(activeDuelList.get(index));
 
-        List<Photo> duel = new ArrayList<>();
-        duel.add(activeDuelList.get(index).getReaderPhoto());
-        duel.add(activeDuelList.get(index).getWriterPhoto());
-
-        return photoService.toDtoList(duel);
     }
+
+    List<PhotoDto> setPercentOfDuelPhotoDtos(Duel duel){
+
+        PhotoDto dto1=photoService.toDto(duel.getWriterPhoto());
+        PhotoDto dto2=photoService.toDto(duel.getReaderPhoto());
+
+
+        Integer writerVoteCount  = duel.getWriterPhotoVoteCount();
+        Integer readerVoteCount  = duel.getReaderPhotoVoteCount();
+
+        dto1.setPercent(0);
+        dto2.setPercent(0);
+
+        if((readerVoteCount+writerVoteCount)>0){
+            dto1.setPercent((writerVoteCount*1000) / (writerVoteCount+readerVoteCount)  );
+            dto2.setPercent((readerVoteCount*1000) / (writerVoteCount+readerVoteCount)  );
+        }
+
+        List<PhotoDto> photoDtos = new ArrayList<>();
+        photoDtos.add(dto1);
+        photoDtos.add(dto2);
+        return photoDtos;
+    }
+
 
     public List<DuelDto> getResults(Integer pagenum) {
 

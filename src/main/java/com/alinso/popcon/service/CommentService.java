@@ -57,7 +57,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        notificationService.newCommment(photo.getUser(),comment.getId());
+        notificationService.newCommment(photo.getUser(),photo.getId());
         return toDto(comment);
     }
 

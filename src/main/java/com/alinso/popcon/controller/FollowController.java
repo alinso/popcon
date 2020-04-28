@@ -33,17 +33,17 @@ public class FollowController {
     }
 
 
-    @GetMapping("myFollowings")
-    public ResponseEntity<?> myFollowings() {
+    @GetMapping("myFollowings/{pageNum}")
+    public ResponseEntity<?> myFollowings(@PathVariable("pageNum")Integer pageNum) {
 
-        List<ProfileDto> profileDtoList = followService.findMyFollowings();
+        List<ProfileDto> profileDtoList = followService.findMyFollowings(pageNum);
         return new ResponseEntity<>(profileDtoList, HttpStatus.OK);
     }
 
-    @GetMapping("myFollowers")
-    public ResponseEntity<?> myFollowers() {
+    @GetMapping("myFollowers/{pageNum}")
+    public ResponseEntity<?> myFollowers(@PathVariable("pageNum") Integer pageNum) {
 
-        List<ProfileDto> profileDtoList = followService.myFollowers();
+        List<ProfileDto> profileDtoList = followService.myFollowers(pageNum);
         return new ResponseEntity<>(profileDtoList, HttpStatus.OK);
     }
 

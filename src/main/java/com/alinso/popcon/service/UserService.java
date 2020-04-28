@@ -9,7 +9,9 @@ import com.alinso.popcon.entity.dto.photo.PhotoFormDto;
 import com.alinso.popcon.entity.enums.Gender;
 import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.CityRepository;
+import com.alinso.popcon.repository.PhotoRepository;
 import com.alinso.popcon.repository.UserRepository;
+import com.alinso.popcon.repository.VoteRepository;
 import com.alinso.popcon.util.DateUtil;
 import com.alinso.popcon.util.FileStorageUtil;
 import com.alinso.popcon.util.SendSms;
@@ -34,6 +36,9 @@ public class UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    VoteRepository voteRepository;
 
     @Autowired
     BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -66,11 +71,13 @@ public class UserService {
         newUser.setPhoneVerified(false);
         newUser.setProfilePicName("user.png");
         newUser.setEnabled(true);
+        newUser.setCorrectGuessCount(0);
+        newUser.setWrongGuessCount(0);
 
-        if(newUser.getGender()== Gender.FEMALE)
+        if (newUser.getGender() == Gender.FEMALE)
             newUser.setPreferredGender(Gender.MALE);
 
-        if(newUser.getGender()==Gender.MALE)
+        if (newUser.getGender() == Gender.MALE)
             newUser.setPreferredGender(Gender.FEMALE);
 
         User user = userRepository.save(newUser);
@@ -87,21 +94,27 @@ public class UserService {
         return profileDto;
     }
 
+    public Integer point(Long userId) {
+        User user = userRepository.findById(userId).get();
+        Integer allLikedOfUser = voteRepository.getLikedCountOfUser(user);
+
+
+        Integer point = allLikedOfUser + (user.getCorrectGuessCount() / 3) - (user.getWrongGuessCount() / 6);
+        return point;
+
+    }
+
 
     public List<ProfileDto> toDtoList(List<User> users) {
 
 
         List<ProfileDto> profileDtos = new ArrayList<>();
-
-        for(User u:users){
+        for (User u : users) {
             profileDtos.add(toDto(u));
         }
 
         return profileDtos;
     }
-
-
-
 
 
     public ProfileDto findByUserName(String username) {
@@ -154,9 +167,9 @@ public class UserService {
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User oldUserUsesThisPhone = userRepository.findByPhone(phone);
 
-        if(oldUserUsesThisPhone!=null && oldUserUsesThisPhone.getId()!=loggedUser.getId())
-            throw   new UserWarningException("Bu telefon numarası kullanımda");
-        if(oldUserUsesThisPhone!=null && oldUserUsesThisPhone.getId()==loggedUser.getId() && loggedUser.getPhoneVerified())
+        if (oldUserUsesThisPhone != null && oldUserUsesThisPhone.getId() != loggedUser.getId())
+            throw new UserWarningException("Bu telefon numarası kullanımda");
+        if (oldUserUsesThisPhone != null && oldUserUsesThisPhone.getId() == loggedUser.getId() && loggedUser.getPhoneVerified())
             throw new UserWarningException("Bu telefon numarasını zaten doğruladın");
 
         SendSms sendSms = new SendSms();
@@ -193,24 +206,25 @@ public class UserService {
 
     public void verifyPhone(String code) {
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(loggedUser.getPhoneVerifyCode().equals(code) && !code.equals("")){
+        if (loggedUser.getPhoneVerifyCode().equals(code) && !code.equals("")) {
             loggedUser.setPhoneVerified(true);
             loggedUser.setPhoneVerifyCode("");
             userRepository.save(loggedUser);
-        }else{
+        } else {
             throw new UserWarningException("Kod yanlış, tekrar dene!");
         }
 
     }
 
     public User findEntityById(Long id) {
-    User user = userRepository.findById(id).get();
-    return user;
+        User user = userRepository.findById(id).get();
+        return user;
     }
+
     public List<ProfileDto> searchUser(String searchText, Integer pageNum) {
 
         Pageable pageable = PageRequest.of(pageNum, 20);
-        searchText.replaceAll("\\s+","");
+        searchText.replaceAll("\\s+", "");
         List<User> users = userRepository.searchUser(searchText, pageable);
         List<ProfileDto> profileDtos = new ArrayList<>();
         for (User user : users) {

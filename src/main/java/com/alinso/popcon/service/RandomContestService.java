@@ -7,6 +7,7 @@ import com.alinso.popcon.entity.dto.photo.PhotoDto;
 import com.alinso.popcon.entity.enums.Gender;
 import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.*;
+import com.alinso.popcon.util.Constants;
 import com.alinso.popcon.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -52,6 +53,9 @@ public class RandomContestService {
     @Autowired
     NotificationService notificationService;
 
+    @Autowired
+    UserRepository userRepository;
+
 
     private List<Photo> getAllRandomContest() {
 
@@ -61,7 +65,7 @@ public class RandomContestService {
 
 
         Boolean genderImportant = false;
-        if ((catId == 1 || catId == 2 || catId == 3) && loggedUser.getPreferredGender() != Gender.UNSELECTED) {
+        if (loggedUser.getPreferredGender() != Gender.UNSELECTED) {
             genderImportant = true;
         }
         PhotoCategory photoCategory = photoCategoryRepository.findById(Long.valueOf(catId)).get();
@@ -81,7 +85,7 @@ public class RandomContestService {
         } else if (randomTypeInt > 3 && randomTypeInt <= 5) {
             allPhotos = photoRepository.findByCategoriesOrderByPercentDesc(photoCategory, pageable);
         } else if (randomTypeInt > 5 && randomTypeInt <= 7) {
-            List<User> followings = followRepository.findUsersFollowedByTheUser(loggedUser);
+            List<User> followings = followRepository.findAllUsersFollowedByTheUser(loggedUser);
             for (User following : followings) {
                 allPhotos.addAll(photoRepository.getByUser(following, pageable));
             }
@@ -136,13 +140,15 @@ public class RandomContestService {
         return photoService.toDtoList(duel);
     }
 
-    public List<PhotoDto> popconBestDaily() {
+    public List<PhotoDto> popconBestDaily(Integer pageNum) {
 
 
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR_OF_DAY, -24);
         Date yesterday = calendar.getTime();
-        Pageable pageable = PageRequest.of(0, 20);
+
+        Pageable pageable = PageRequest.of(pageNum, 20);
+
 
         List<Photo> bestPhotosOfDay = photoRepository.getBestPhotosOfDay(yesterday, pageable);
 
@@ -195,6 +201,15 @@ public class RandomContestService {
         voteRepository.save(vote);
         setPercent(other);
         setPercent(selected);
+
+
+        if(selected.getPercent()>other.getPercent() && selected.getPercent()!=0 && other.getPercent()!=0){
+            loggedUser.setCorrectGuessCount(loggedUser.getCorrectGuessCount()+1);
+        }
+        if(selected.getPercent()<other.getPercent() && selected.getPercent()!=0 && other.getPercent()!=0){
+            loggedUser.setWrongGuessCount(loggedUser.getWrongGuessCount()+1);
+        }
+        userRepository.save(loggedUser);
     }
 
 
@@ -204,10 +219,10 @@ public class RandomContestService {
         Integer likeCount = likeRepository.getLikesOfPhoto(p);
 
         Integer totalVoteCount = won + lost + likeCount;
-        if (totalVoteCount < 10)
+        if (totalVoteCount < Constants.minVoteCountToShowPercent)
             return;
 
-        if (totalVoteCount == 10)
+        if (totalVoteCount == Constants.minVoteCountToShowPercent)
             notificationService.showPercent(p.getUser(), p.getId());
 
 

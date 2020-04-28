@@ -58,6 +58,12 @@ public class User extends BaseEntity implements UserDetails {
     private  String password;
 
     @Column
+    private Integer correctGuessCount;
+
+    @Column
+    private Integer wrongGuessCount;
+
+    @Column
     private String confirmPassword;
 
     @Column
@@ -73,6 +79,29 @@ public class User extends BaseEntity implements UserDetails {
     @Enumerated(EnumType.ORDINAL)
     private Gender preferredGender;
 
+    public Integer getCorrectGuessCount() {
+        return correctGuessCount;
+    }
+
+    public void setCorrectGuessCount(Integer correctGuessCount) {
+        this.correctGuessCount = correctGuessCount;
+    }
+
+    public Integer getWrongGuessCount() {
+        return wrongGuessCount;
+    }
+
+    public void setWrongGuessCount(Integer wrongGuessCount) {
+        this.wrongGuessCount = wrongGuessCount;
+    }
+
+    public Date getGetBirthDate() {
+        return getBirthDate;
+    }
+
+    public void setGetBirthDate(Date getBirthDate) {
+        this.getBirthDate = getBirthDate;
+    }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;

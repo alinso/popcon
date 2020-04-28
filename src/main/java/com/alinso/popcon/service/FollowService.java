@@ -6,6 +6,8 @@ import com.alinso.popcon.entity.dto.user.ProfileDto;
 import com.alinso.popcon.repository.FollowRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -65,19 +67,23 @@ public class FollowService {
             return true;
     }
 
-    public List<ProfileDto> myFollowers(){
+    public List<ProfileDto> myFollowers(Integer pageNum){
         User loggedUser  = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        List<User> followers  =  followRepository.findFollowersOfUser(loggedUser);
+        Pageable pageable  = PageRequest.of(pageNum,20);
+
+        List<User> followers  =  followRepository.findFollowersOfUser(loggedUser,pageable);
 
         return userService.toDtoList(followers);
 
     }
 
 
-    public List<ProfileDto> findMyFollowings() {
+    public List<ProfileDto> findMyFollowings(Integer pageNum) {
         User loggedUser  =(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<User> followingUsers = followRepository.findUsersFollowedByTheUser(loggedUser);
+
+        Pageable pageable  = PageRequest.of(pageNum,20);
+        List<User> followingUsers = followRepository.findUsersFollowedByTheUser(loggedUser,pageable);
 
        return userService.toDtoList(followingUsers);
     }

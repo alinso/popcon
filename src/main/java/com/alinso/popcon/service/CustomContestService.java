@@ -68,6 +68,8 @@ public class CustomContestService {
         customContest.setCreator(creator);
         customContest.setPhoto1(photo1);
         customContest.setPhoto2(photo2);
+        customContest.setPhoto2VoteCount(0);
+        customContest.setPhoto1VoteCount(0);
         customContest.setTitle(customContestFormDto.getTitle());
         customContest.setActive(true);
         customContest.setMaxVote(customContestFormDto.getMaxVote());
@@ -98,11 +100,8 @@ public class CustomContestService {
         Integer index = random.nextInt(customContestList.size());
 
 
-        List<Photo> duel = new ArrayList<>();
-        duel.add(customContestList.get(index).getPhoto1());
-        duel.add(customContestList.get(index).getPhoto2());
+        return setPercentOfCustomContestPhotoDtos(customContestList.get(index));
 
-        return photoService.toDtoList(duel);
     }
 
 
@@ -115,9 +114,14 @@ public class CustomContestService {
 
         CustomContest customContest = customContestRepository.findByPhotos(selectedPhoto, otherPhoto);
         customContest.setVoteCount(customContest.getVoteCount() + 1);
-        if (customContest.getVoteCount() >= customContest.getVoteCount())
-            customContest.setActive(false);
+
+
+        if (selectedId == customContest.getPhoto1().getId())
+            customContest.setPhoto1VoteCount(customContest.getPhoto1VoteCount() + 1);
+        if (selectedId == customContest.getPhoto2().getId())
+            customContest.setPhoto2VoteCount(customContest.getPhoto2VoteCount() + 1);
         customContestRepository.save(customContest);
+
 
         CustomContestVote customContestVote = new CustomContestVote();
         customContestVote.setCustomContest(customContest);
@@ -127,6 +131,31 @@ public class CustomContestService {
 
         customContestVoteRepository.save(customContestVote);
 
+    }
+
+    List<PhotoDto> setPercentOfCustomContestPhotoDtos(CustomContest customContest){
+
+        if(customContest==null)
+            return null;
+
+        PhotoDto dto1=photoService.toDto(customContest.getPhoto1());
+        PhotoDto dto2=photoService.toDto(customContest.getPhoto2());
+
+        Integer photo1VoteCount  = customContest.getPhoto1VoteCount();
+        Integer photo2VoteCount  = customContest.getPhoto2VoteCount();
+
+        dto1.setPercent(0);
+        dto2.setPercent(0);
+
+        if((photo2VoteCount+photo1VoteCount)>0){
+            dto1.setPercent((photo1VoteCount*1000) / (photo1VoteCount+photo2VoteCount)  );
+            dto2.setPercent((photo2VoteCount*1000) / (photo1VoteCount+photo2VoteCount)  );
+        }
+
+        List<PhotoDto> photoDtos = new ArrayList<>();
+        photoDtos.add(dto1);
+        photoDtos.add(dto2);
+        return photoDtos;
     }
 
     public void deleteCustomContest(Long id) {
@@ -164,17 +193,11 @@ public class CustomContestService {
             customContestDto.setPhoto2(photoService.toDto(c.getPhoto2()));
             customContestDto.setTitle(c.getTitle());
 
-            Integer photo1VoteCount = customContestVoteRepository.findByCustomContestAndPhoto1(c, c.getPhoto1());
-            Integer photo2VoteCount = customContestVoteRepository.findByCustomContestAndPhoto2(c, c.getPhoto2());
-
-            customContestDto.setPhoto1VoteCount(photo1VoteCount);
-            customContestDto.setPhoto2VoteCount(photo2VoteCount);
 
             customContestDtoList.add(customContestDto);
         }
 
         return customContestDtoList;
     }
-
 
 }

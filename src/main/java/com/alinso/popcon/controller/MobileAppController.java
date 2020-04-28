@@ -1,6 +1,5 @@
 package com.alinso.popcon.controller;
 
-
 import com.alinso.popcon.entity.User;
 import com.alinso.popcon.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

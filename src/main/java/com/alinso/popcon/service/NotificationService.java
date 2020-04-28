@@ -8,6 +8,7 @@ import com.alinso.popcon.entity.dto.notification.NotificationDto;
 import com.alinso.popcon.entity.dto.user.ProfileDto;
 import com.alinso.popcon.entity.enums.NotificationType;
 import com.alinso.popcon.exception.UserWarningException;
+import com.alinso.popcon.pushNotification.AndroidPushNotificationsService;
 import com.alinso.popcon.repository.NotificationRepository;
 import com.alinso.popcon.util.DateUtil;
 import com.alinso.popcon.util.UserUtil;
@@ -29,8 +30,8 @@ public class NotificationService {
     @Autowired
     NotificationRepository notificationRepository;
 
-//    @Autowired
-//    AndroidPushNotificationsService androidPushNotificationsService;
+    @Autowired
+    AndroidPushNotificationsService androidPushNotificationsService;
 
     @Autowired
     ModelMapper modelMapper;
@@ -73,28 +74,46 @@ public class NotificationService {
     public void newMessage(User target){
         User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         createNotification(target,trigger,NotificationType.MESSAGE,null);
+        androidPushNotificationsService.newMessage(trigger,target);
 
     }
 
-    public void newPhotoWar(User target, Duel duel){
+    public void newDuelRequest(User target, Duel duel){
         User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        createNotification(target,trigger,NotificationType.PHOTO_WAR, duel.getId());
+        createNotification(target,trigger,NotificationType.DUEL_REQUEST, duel.getId());
+        androidPushNotificationsService.newDuelRequest(trigger,target);
 
     }
+    public void newDuelAccept(User target, Duel duel){
+        User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        createNotification(target,trigger,NotificationType.DUEL_ACCEPT, duel.getId());
+        androidPushNotificationsService.newDuelAccept(trigger,target);
+
+    }
+    public void newDuelDecline(User target, Duel duel){
+        User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        createNotification(target,trigger,NotificationType.DUEL_DECLINE, duel.getId());
+        androidPushNotificationsService.newDuelDecline(trigger,target);
+    }
+//    public void newPhotoLike(User target, Long itemId){
+//        User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        createNotification(target,trigger,NotificationType.PHOTO_LIKE, itemId);
+//    }
 
     public void newFollow(User target){
         User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         createNotification(target,trigger,NotificationType.FOLLOW,null);
+        androidPushNotificationsService.newFollow(trigger,target);
 
     }
 
     public void newCommment(User target,Long itemId){
         User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         createNotification(target,trigger,NotificationType.COMMENT,itemId);
+        androidPushNotificationsService.newComment(trigger,target);
     }
     public void showPercent(User target,Long itemId){
-        User trigger = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        createNotification(target,trigger,NotificationType.SHOW_PERCENT,itemId);
+        createNotification(target,null,NotificationType.SHOW_PERCENT,itemId);
     }
 
 

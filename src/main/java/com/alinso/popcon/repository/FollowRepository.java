@@ -3,6 +3,7 @@ package com.alinso.popcon.repository;
 
 import com.alinso.popcon.entity.Follow;
 import com.alinso.popcon.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,10 +18,13 @@ public interface FollowRepository extends JpaRepository<Follow,Long> {
     Follow findFollowingByLeaderAndFollower(@Param("leader") User leader, @Param("follower") User follower);
 
     @Query("select follow.leader from  Follow follow where follow.follower=:follower ")
-    List<User> findUsersFollowedByTheUser(@Param("follower") User loggedUser);
+    List<User> findUsersFollowedByTheUser(@Param("follower") User loggedUser,Pageable pageable);
+
+    @Query("select follow.leader from  Follow follow where follow.follower=:follower ")
+    List<User> findAllUsersFollowedByTheUser(@Param("follower") User loggedUser);
 
     @Query("select follow.follower from  Follow follow where follow.leader=:leader ")
-    List<User> findFollowersOfUser(@Param("leader") User leader);
+    List<User> findFollowersOfUser(@Param("leader") User leader, Pageable pageable);
 
     @Query("select count(follow) from Follow  follow " +
             "where follow.leader=:user")

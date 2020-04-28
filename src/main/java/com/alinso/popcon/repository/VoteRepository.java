@@ -25,4 +25,7 @@ public interface VoteRepository extends JpaRepository<Vote,Long> {
 
     @Query("select v from Vote v where v.selectedPhoto=:photo or v.otherPhoto=:photo")
     List<Vote> findAllVotesOfPhoto(@Param("photo") Photo photo);
+
+    @Query("select count(*) from Vote v where v.selectedPhoto.user=:user")
+    Integer getLikedCountOfUser(@Param("user")User user);
 }

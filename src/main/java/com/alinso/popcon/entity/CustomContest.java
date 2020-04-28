@@ -16,6 +16,11 @@ public class CustomContest extends BaseEntity {
     @ManyToOne
     private Photo photo2;
 
+    @Column
+    private Integer photo1VoteCount;
+
+    @Column
+    private Integer photo2VoteCount;
 
     @Column
     private String title;
@@ -83,5 +88,21 @@ public class CustomContest extends BaseEntity {
 
     public void setVoteCount(Integer voteCount) {
         this.voteCount = voteCount;
+    }
+
+    public Integer getPhoto2VoteCount() {
+        return photo2VoteCount;
+    }
+
+    public void setPhoto2VoteCount(Integer photo2VoteCount) {
+        this.photo2VoteCount = photo2VoteCount;
+    }
+
+    public Integer getPhoto1VoteCount() {
+        return photo1VoteCount;
+    }
+
+    public void setPhoto1VoteCount(Integer photo1VoteCount) {
+        this.photo1VoteCount = photo1VoteCount;
     }
 }
