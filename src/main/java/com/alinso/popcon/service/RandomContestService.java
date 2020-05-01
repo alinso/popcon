@@ -1,14 +1,10 @@
 package com.alinso.popcon.service;
 
 import com.alinso.popcon.entity.*;
-import com.alinso.popcon.entity.dto.contest.CustomContestDto;
-import com.alinso.popcon.entity.dto.contest.CustomContestFormDto;
 import com.alinso.popcon.entity.dto.photo.PhotoDto;
 import com.alinso.popcon.entity.enums.Gender;
-import com.alinso.popcon.exception.UserWarningException;
 import com.alinso.popcon.repository.*;
 import com.alinso.popcon.util.Constants;
-import com.alinso.popcon.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -140,14 +136,14 @@ public class RandomContestService {
         return photoService.toDtoList(duel);
     }
 
-    public List<PhotoDto> popconBestDaily(Integer pageNum) {
+    public List<PhotoDto> trending(Integer pageNum) {
 
 
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        calendar.add(Calendar.DAY_OF_YEAR, -5);
         Date yesterday = calendar.getTime();
 
-        Pageable pageable = PageRequest.of(pageNum, 20);
+        Pageable pageable = PageRequest.of(pageNum, 18);
 
 
         List<Photo> bestPhotosOfDay = photoRepository.getBestPhotosOfDay(yesterday, pageable);
@@ -216,7 +212,7 @@ public class RandomContestService {
     public void setPercent(Photo p) {
         Integer won = voteRepository.wonCount(p);
         Integer lost = voteRepository.lostCount(p);
-        Integer likeCount = likeRepository.getLikesOfPhoto(p);
+        Integer likeCount = likeRepository.getLikeCountOfPhoto(p);
 
         Integer totalVoteCount = won + lost + likeCount;
         if (totalVoteCount < Constants.minVoteCountToShowPercent)
@@ -239,6 +235,10 @@ public class RandomContestService {
     }
 
     public List<PhotoDto> popconBest(Integer pageNum) {
+
+        if(pageNum>10){
+            return null;
+        }
 
         Pageable pageable = PageRequest.of(pageNum, 20);
         List<Photo> bestPhotosOfDay = photoRepository.getBest(pageable);

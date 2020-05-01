@@ -77,7 +77,7 @@ public class FileStorageUtil {
     private void saveResizedImage(String name, Boolean isProfile){
 
 
-        int targetWidth = 900;
+        int targetWidth = 1200;
 
 
 

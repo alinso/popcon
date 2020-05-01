@@ -17,6 +17,36 @@ public class DuelDto {
     PhotoDto readerPhoto;
     PhotoDto writerPhoto;
     DuelStatus status;
+    Boolean active;
+    Boolean isWatching;
+    Integer watcherCount;
+
+    public Boolean getWatching() {
+        return isWatching;
+    }
+
+    public void setWatching(Boolean watching) {
+        isWatching = watching;
+    }
+
+    public Integer getWatcherCount() {
+        return watcherCount;
+    }
+
+    public void setWatcherCount(Integer watcherCount) {
+        this.watcherCount = watcherCount;
+    }
+
+    public Long getAcceptedTime() {
+        return acceptedTime;
+    }
+
+    public void setAcceptedTime(Long acceptedTime) {
+        this.acceptedTime = acceptedTime;
+    }
+
+    Long acceptedTime;
+
 
     public Boolean getActive() {
         return active;
@@ -26,7 +56,6 @@ public class DuelDto {
         this.active = active;
     }
 
-    Boolean active;
 
 
     public Integer getReaderPhotoVoteCount() {

@@ -16,4 +16,7 @@ public interface DuelVoteRepository extends JpaRepository<DuelVote,Long> {
 
     @Query("select count(d) from DuelVote  d where d.selectedPhoto=:photo and d.duel=:duel")
     Integer findByDuelAndPhoto(@Param("duel") Duel duel, @Param("photo") User photo);
+
+    @Query("select v from DuelVote v where v.duel=:duel")
+    List<DuelVote> findByDuel(@Param("duel") Duel d);
 }

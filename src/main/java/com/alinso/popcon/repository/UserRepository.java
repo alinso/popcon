@@ -1,6 +1,8 @@
 package com.alinso.popcon.repository;
 
 import com.alinso.popcon.entity.User;
+import com.alinso.popcon.entity.enums.Gender;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,4 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u from User u where u.password=:password")
     User findByPassword(@Param("password") String pasword);
+
+    @Query("select count(u) from User  u where u.gender=:gender")
+    Integer userCountByGender(@Param("gender") Gender gender);
 }

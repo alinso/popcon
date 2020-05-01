@@ -154,4 +154,14 @@ public class AndroidPushNotificationsService {
         }
     }
 
+    public Boolean newDuelFinish(User watcher) {
+        String message = "Takip ettiğin bir düello sonuçlandı";
+        send("Düello Sonucu", watcher.getFirebaseId(), message);
+        if(watcher.getFirebaseId()==null){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
 }

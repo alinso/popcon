@@ -22,45 +22,66 @@ public class DuelController {
 
 
     @GetMapping("save/{readerId}/{photoId}")
-    public ResponseEntity<?> save(@PathVariable("readerId") Long readerId, @PathVariable("photoId") Long photoId){
-        duelService.save(photoId,readerId);
+    public ResponseEntity<?> save(@PathVariable("readerId") Long readerId, @PathVariable("photoId") Long photoId) {
+        duelService.save(photoId, readerId);
         return new ResponseEntity<>("OK", HttpStatus.ACCEPTED);
     }
+
     @GetMapping("findById/{id}")
-    public ResponseEntity<?> findById(@PathVariable("id") Long id){
+    public ResponseEntity<?> findById(@PathVariable("id") Long id) {
         DuelDto duelDto = duelService.findById(id);
         return new ResponseEntity<>(duelDto, HttpStatus.ACCEPTED);
     }
+
     @GetMapping("decline/{id}")
-    public ResponseEntity<?> decline(@PathVariable("id") Long id){
+    public ResponseEntity<?> decline(@PathVariable("id") Long id) {
         duelService.decline(id);
         return new ResponseEntity<>("declined", HttpStatus.ACCEPTED);
     }
 
     @GetMapping("accept/{photoWarId}/{readerPhotoId}")
-    public ResponseEntity<?> accept(@PathVariable("photoWarId") Long photoWarId, @PathVariable("readerPhotoId") Long readerPhotoId){
-        duelService.accept(photoWarId,readerPhotoId);
+    public ResponseEntity<?> accept(@PathVariable("photoWarId") Long photoWarId, @PathVariable("readerPhotoId") Long readerPhotoId) {
+        duelService.accept(photoWarId, readerPhotoId);
         return new ResponseEntity<>("declined", HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/vote/{selectedId}/{otherId}")
-    public ResponseEntity<?> voteDuel( @PathVariable("selectedId") Long selectedId, @PathVariable("otherId") Long otherId) {
+    public ResponseEntity<?> voteDuel(@PathVariable("selectedId") Long selectedId, @PathVariable("otherId") Long otherId) {
 
-        duelService.vote(selectedId,otherId);
+        duelService.vote(selectedId, otherId);
         return new ResponseEntity<>("voted", HttpStatus.CREATED);
     }
 
     @GetMapping("/getDuelForVoting")
     public ResponseEntity<?> getDuelForVoting() {
 
-        List<PhotoDto> photoDtos  =duelService.getDuelForVoting();
+        List<PhotoDto> photoDtos = duelService.getDuelForVoting();
         return new ResponseEntity<>(photoDtos, HttpStatus.CREATED);
     }
-    @GetMapping("/results/{pageNum}")
-    public ResponseEntity<?> results(@PathVariable("pageNum")Integer pageNum) {
 
-        List<DuelDto> photoDtos  =duelService.getResults(pageNum);
+    @GetMapping("/results/{pageNum}")
+    public ResponseEntity<?> results(@PathVariable("pageNum") Integer pageNum) {
+
+        List<DuelDto> photoDtos = duelService.getResults(pageNum);
         return new ResponseEntity<>(photoDtos, HttpStatus.CREATED);
+    }
+    @GetMapping("/allResults/{pageNum}")
+    public ResponseEntity<?> getAll(@PathVariable("pageNum") Integer pageNum) {
+
+        List<DuelDto> photoDtos = duelService.getAllResults(pageNum);
+        return new ResponseEntity<>(photoDtos, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/delete/{id}")
+    public ResponseEntity<?> results(@PathVariable("id") Long id) {
+        duelService.delete(id);
+        return new ResponseEntity<>("deleted", HttpStatus.CREATED);
+    }
+
+    @GetMapping("/toggleWatch/{id}")
+    public ResponseEntity<?> toggleWatch(@PathVariable("id") Long id) {
+        duelService.toggleWatch(id);
+        return new ResponseEntity<>("deleted", HttpStatus.CREATED);
     }
 
 }

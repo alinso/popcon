@@ -1,17 +1,11 @@
 package com.alinso.popcon.service;
 
-import com.alinso.popcon.entity.Duel;
-import com.alinso.popcon.entity.DuelVote;
-import com.alinso.popcon.entity.Photo;
-import com.alinso.popcon.entity.User;
+import com.alinso.popcon.entity.*;
 import com.alinso.popcon.entity.dto.contest.DuelDto;
 import com.alinso.popcon.entity.dto.photo.PhotoDto;
 import com.alinso.popcon.entity.enums.DuelStatus;
 import com.alinso.popcon.exception.UserWarningException;
-import com.alinso.popcon.repository.DuelRepository;
-import com.alinso.popcon.repository.DuelVoteRepository;
-import com.alinso.popcon.repository.PhotoRepository;
-import com.alinso.popcon.repository.UserRepository;
+import com.alinso.popcon.repository.*;
 import com.alinso.popcon.util.UserUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +44,9 @@ public class DuelService {
     @Autowired
     PhotoService photoService;
 
+    @Autowired
+    DuelWatchRepository duelWatchRepository;
+
     public void save(Long photoId, Long readerId) {
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User reader = userRepository.getOne(readerId);
@@ -77,11 +74,11 @@ public class DuelService {
     }
 
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0/10 * * * *")
     public void updateStatus() {
 
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        calendar.add(Calendar.HOUR, -24);
         Date yesterday = calendar.getTime();
 
         List<Duel> expiredDuels = duelRepository.findExpiredDuels(yesterday, DuelStatus.ACCEPTED);
@@ -89,6 +86,17 @@ public class DuelService {
             d.setStatus(DuelStatus.FINISHED);
         }
         duelRepository.saveAll(expiredDuels);
+
+
+        //send Notification to watchers
+        for (Duel d : expiredDuels) {
+            List<DuelWatch> duelWatches  =duelWatchRepository.findByDuel(d);
+            for(DuelWatch duelWatch : duelWatches){
+                notificationService.duelFinished(d.getId(), duelWatch.getWatcher());
+            }
+            notificationService.duelFinished(d.getId(), d.getReader());
+            notificationService.duelFinished(d.getId(), d.getWriter());
+        }
 
     }
 
@@ -98,12 +106,28 @@ public class DuelService {
         DuelDto photoDto = modelMapper.map(duel, DuelDto.class);
         photoDto.setReader(userService.toDto(duel.getReader()));
         photoDto.setWriter(userService.toDto(duel.getWriter()));
+        photoDto.setWatching(isWatching(duel));
+        photoDto.setWatcherCount(duelWatchRepository.getWatcherCount(duel));
+        if(duel.getAcceptDate()!=null)
+        photoDto.setAcceptedTime(duel.getAcceptDate().getTime());
+
         if (duel.getReaderPhoto() != null)
             photoDto.setReaderPhoto(photoService.toDto(duel.getReaderPhoto()));
 
 
         photoDto.setWriterPhoto(photoService.toDto(duel.getWriterPhoto()));
         return photoDto;
+    }
+
+
+
+    private Boolean isWatching(Duel duel) {
+        User user  =(User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        DuelWatch duelWatch  =duelWatchRepository.findByDuelAndUser(duel,user);
+        if(duelWatch==null)
+            return false;
+        return true;
+
     }
 
     public void decline(Long id) {
@@ -236,6 +260,68 @@ public class DuelService {
 
         return duelDtos;
     }
+    public List<DuelDto> getAllResults(Integer pagenum) {
 
+        Pageable pageable = PageRequest.of(pagenum, 5);
+        List<Duel> duelList = duelRepository.getAllByPage( DuelStatus.ACCEPTED,pageable);
+        List<DuelDto> duelDtos = new ArrayList<>();
+        for (Duel d : duelList) {
+            duelDtos.add(toDto(d));
+        }
+
+        return duelDtos;
+    }
+
+
+    public void delete(Long  id) {
+
+        User user  =(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Duel d=duelRepository.findById(id).get();
+
+        if(d.getWriter().getId()==user.getId() || d.getReader().getId()==user.getId()) {
+            List<DuelVote> duelVoteList = duelVoteRepository.findByDuel(d);
+            duelVoteRepository.deleteAll(duelVoteList);
+            duelRepository.delete(d);
+        }
+    }
+    public void toggleWatch(Long id){
+        Duel duel = duelRepository.getOne(id);
+        User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+
+        DuelWatch duelWatch =  duelWatchRepository.findByDuelAndUser(duel,user);
+        if(duelWatch==null){
+            duelWatch  = new DuelWatch();
+            duelWatch.setDuel(duel);
+            duelWatch.setWatcher(user);
+            duelWatchRepository.save(duelWatch);
+        }else{
+            duelWatchRepository.delete(duelWatch);
+        }
+    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

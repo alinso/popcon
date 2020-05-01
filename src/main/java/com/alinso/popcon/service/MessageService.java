@@ -272,9 +272,11 @@ public class MessageService {
         //this will be changed in future
 
             message.setMessage("Selam \uD83D\uDC4B " +
-                    "ilk kullanıcılarımızdan olduğun için teşekkürler. Fotoğraf savaşlarına hoşgeldin. Sadece harika fotoğraflardan oluşan bir platform yaratıyoruz. " +
-                    "Portre, moda, spor, doğa gibi birçok alanda fotoğraflarını paylaşabiir ve diğer fotoğrafları oylayabilirsin." +
-                    "Aklına takılan bir şey olursa yaz. Sağ alt manüdeki nasıl çalışır kısmını okumayı unutma, iyi eğlenceler \uD83C\uDF89");
+                    "ilk kullanıcılarımızdan olduğun için teşekkürler. Fotoğraf savaşlarına hoşgeldin. En iyi fotoğraflardan oluşan bir platform yaratıyoruz. " +
+                    "Portre, moda, spor, doğa gibi birçok alanda fotoğraflarını paylaşabilir ve diğer fotoğrafları oylayabilirsin. " +
+                    " Fotoğrafın kazandıkça ve başka fotoğrafları oyladıkça puan kazanırsın." +
+                    "Aklına takılan bir şey olursa yaz. Verdiğin oyları kimse göremez. " +
+                    "Detaylar için sağ alt manüdeki kurallar kısmını okumayı unutma, iyi eğlenceler \uD83C\uDF89");
         /////
         message.setReader(reader);
         message.setWriter(userService.findEntityById(Long.valueOf(59)));

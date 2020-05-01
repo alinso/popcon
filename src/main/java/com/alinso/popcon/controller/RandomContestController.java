@@ -29,10 +29,10 @@ public class RandomContestController {
 
 
 
-    @GetMapping("/bestOfDay/{pageNum}")
+    @GetMapping("/trending/{pageNum}")
     public ResponseEntity<?> bestOfDay(@PathVariable("pageNum") Integer pageNum) {
 
-        List<PhotoDto> photoDtos  = randomContestService.popconBestDaily(pageNum);
+        List<PhotoDto> photoDtos  = randomContestService.trending(pageNum);
         return new ResponseEntity<>(photoDtos, HttpStatus.CREATED);
     }
 

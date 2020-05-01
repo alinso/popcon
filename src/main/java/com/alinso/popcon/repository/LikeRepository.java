@@ -7,7 +7,10 @@ import com.alinso.popcon.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface LikeRepository extends JpaRepository<PhotoLike, Long> {
@@ -16,6 +19,10 @@ public interface LikeRepository extends JpaRepository<PhotoLike, Long> {
     PhotoLike findByLikerAndPhoto(@Param("liker") User liker, @Param("photo") Photo photo);
 
     @Query("select count(l)  from PhotoLike l where l.photo=:photo")
-    Integer getLikesOfPhoto(@Param("photo") Photo photo);
+    Integer getLikeCountOfPhoto(@Param("photo") Photo photo);
+
+    @Query("select l from PhotoLike l where l.photo=:photo")
+    List<PhotoLike> getLikesByPhoto(@Param("photo") Photo photo);
+
 
 }

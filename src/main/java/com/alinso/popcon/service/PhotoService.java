@@ -34,6 +34,15 @@ public class PhotoService {
     LikeRepository likeRepository;
 
     @Autowired
+    CommentRepository commentRepository;
+
+    @Autowired
+    DuelService duelService;
+
+    @Autowired
+    DuelRepository duelRepository;
+
+    @Autowired
     VoteRepository voteRepository;
 
     @Autowired
@@ -51,8 +60,6 @@ public class PhotoService {
     @Autowired
     PhotoCategoryRepository photoCategoryRepository;
 
-    @Autowired
-    CommentRepository commentRepository;
 
     @Autowired
     BlockService blockService;
@@ -118,7 +125,7 @@ public class PhotoService {
         User loggedUser  =(User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         PhotoDto dto = modelMapper.map(p, PhotoDto.class);
         dto.setUser(userService.toDto(p.getUser()));
-        dto.setLikeCount(likeRepository.getLikesOfPhoto(p));
+        dto.setLikeCount(likeRepository.getLikeCountOfPhoto(p));
         dto.setCommentCount(commentRepository.getCommentCountOfPhoto(p));
 
         PhotoLike photoLike  =likeRepository.findByLikerAndPhoto(loggedUser,p);
@@ -139,9 +146,25 @@ public class PhotoService {
         if (photo != null) {
             fileStorageUtil.deleteFile(photoName);
 
+            //delete votes
             List<Vote> allVotesOfPhoto = voteRepository.findAllVotesOfPhoto(photo);
             voteRepository.deleteAll(allVotesOfPhoto);
 
+            //delete duel
+            List<Duel> allDuelsOfPhoto  = duelRepository.findAllDuelsOfPhoto(photo);
+            for(Duel d: allDuelsOfPhoto){
+                duelService.delete(d.getId());
+            }
+
+            //delete comments
+            List<Comment>  commentList  =commentRepository.getAllCommentsByPhoto(photo);
+            commentRepository.deleteAll(commentList);
+
+            //delete likes
+            List<PhotoLike> likeList=likeRepository.getLikesByPhoto(photo);
+            likeRepository.deleteAll(likeList);
+
+            //delete custom contest
             List<CustomContest> customContestList = customContestService.findAllContestsOfPhoto(photo);
             for (CustomContest c : customContestList) {
                 customContestService.deleteCustomContest(c.getId());
@@ -189,6 +212,16 @@ public class PhotoService {
           //  notificationService.newPhotoLike(photo.getUser(),photo.getId());
 
         }
+    }
+
+    public List<Photo> getAllByUserId(Long id) {
+        User u = userService.findEntityById(id);
+
+        if (blockService.isThereABlock(u.getId()))
+            throw new UserWarningException("Erişim Yok");
+
+        List<Photo> photos = photoRepository.getByUser(u);
+        return photos;
     }
 }
 

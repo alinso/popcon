@@ -1,6 +1,7 @@
 package com.alinso.popcon.service;
 
 import com.alinso.popcon.entity.City;
+import com.alinso.popcon.entity.Photo;
 import com.alinso.popcon.entity.User;
 import com.alinso.popcon.entity.dto.user.ChangePasswordDto;
 import com.alinso.popcon.entity.dto.user.ProfileDto;
@@ -25,6 +26,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.StoredProcedureQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -34,6 +37,9 @@ import java.util.Random;
 public class UserService {
 
 
+
+    @Autowired
+    EntityManager entityManager;
     @Autowired
     UserRepository userRepository;
 
@@ -57,6 +63,9 @@ public class UserService {
 
     @Autowired
     MessageService messageService;
+
+    @Autowired
+    PhotoService photoService;
 
     public User register(User newUser) {
 
@@ -99,7 +108,7 @@ public class UserService {
         Integer allLikedOfUser = voteRepository.getLikedCountOfUser(user);
 
 
-        Integer point = allLikedOfUser + (user.getCorrectGuessCount() / 3) - (user.getWrongGuessCount() / 6);
+        Integer point = allLikedOfUser + (user.getCorrectGuessCount() / 2) - (user.getWrongGuessCount() / 3);
         return point;
 
     }
@@ -249,5 +258,34 @@ public class UserService {
         loggedUser.setProfilePicName(newName);
         userRepository.save(loggedUser);
         return newName;
+    }
+
+
+
+
+    public void deleteById(Long id) {
+
+        try {
+
+            User user = userRepository.getOne(id);
+
+            //Delete profile photo
+            String profilePhoto = user.getProfilePicName();
+            fileStorageUtil.deleteFile(profilePhoto);
+
+            //Delete album photos
+            List<Photo> photos = photoService.getAllByUserId(id);
+            for (Photo p : photos) {
+                photoService.delete(p.getFileName());
+            }
+
+            StoredProcedureQuery delete_user_sp = entityManager.createNamedStoredProcedureQuery("delete_user_sp");
+            delete_user_sp.setParameter("userId", id);
+            delete_user_sp.execute();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

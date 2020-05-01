@@ -1,9 +1,6 @@
 package com.alinso.popcon.service;
 
-import com.alinso.popcon.entity.CustomContest;
-import com.alinso.popcon.entity.CustomContestVote;
-import com.alinso.popcon.entity.Photo;
-import com.alinso.popcon.entity.User;
+import com.alinso.popcon.entity.*;
 import com.alinso.popcon.entity.dto.contest.CustomContestDto;
 import com.alinso.popcon.entity.dto.contest.CustomContestFormDto;
 import com.alinso.popcon.entity.dto.photo.PhotoDto;
@@ -20,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -86,10 +84,13 @@ public class CustomContestService {
         if (customContestList.size() == 0)
             throw new UserWarningException("Yeni oylama yok");
 
-        for (CustomContest c : customContestList) {
+        Iterator<CustomContest> i = customContestList.iterator();
+
+        while(i.hasNext()) {
+            CustomContest c= i.next();
             for (CustomContestVote v : myVotes)
                 if (v.getCustomContest().getId() == c.getId()) {
-                    customContestList.remove(c);
+                    i.remove();
                 }
         }
 

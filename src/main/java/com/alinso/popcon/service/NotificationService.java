@@ -116,6 +116,10 @@ public class NotificationService {
         createNotification(target,null,NotificationType.SHOW_PERCENT,itemId);
     }
 
+    public void duelFinished(long id, User watcher) {
+        createNotification(watcher,null,NotificationType.FOLLOW,id);
+        androidPushNotificationsService.newDuelFinish(watcher);
+    }
 
 
 
@@ -201,8 +205,6 @@ public class NotificationService {
         createNotification(target,trigger,NotificationType.MESSAGE,null);
 
     }
-
-
 
 
 }

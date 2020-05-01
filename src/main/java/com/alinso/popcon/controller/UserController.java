@@ -58,7 +58,7 @@ public class UserController {
     ProfilePicValidator profilePicValidator;
 
     @GetMapping("test")
-    public ResponseEntity<?> maleCount(){
+    public ResponseEntity<?> maleCount() {
         return new ResponseEntity<>("test test", HttpStatus.OK);
     }
 
@@ -79,27 +79,27 @@ public class UserController {
     @GetMapping("/profile/{id}")
     public ResponseEntity<?> profile(@PathVariable("id") Long id) {
 
-        ProfileDto profileDto  =userService.findById(id);
+        ProfileDto profileDto = userService.findById(id);
         return new ResponseEntity<ProfileDto>(profileDto, HttpStatus.CREATED);
     }
 
     @GetMapping("/getIdOfUserName/{username}")
     public ResponseEntity<?> getIdOfUserName(@PathVariable("username") String username) {
 
-        ProfileDto profileDto  =userService.findByUserName(username);
+        ProfileDto profileDto = userService.findByUserName(username);
         return new ResponseEntity<>(profileDto.getId(), HttpStatus.CREATED);
     }
 
 
     @GetMapping("/likedCount/{id}")
-    public ResponseEntity<?> sendPhoneVerifyCode( @PathVariable("id") Long userId) {
+    public ResponseEntity<?> sendPhoneVerifyCode(@PathVariable("id") Long userId) {
 
-        Integer likeCount  =userService.point(userId);
+        Integer likeCount = userService.point(userId);
         return new ResponseEntity<Integer>(likeCount, HttpStatus.CREATED);
     }
 
     @GetMapping("/sendPhoneVerifyCode/{phone}")
-    public ResponseEntity<?> sendPhoneVerifyCode( @PathVariable("phone") String phone) {
+    public ResponseEntity<?> sendPhoneVerifyCode(@PathVariable("phone") String phone) {
 
         userService.sendPhoneVerifyCode(phone);
         return new ResponseEntity<String>("OK", HttpStatus.CREATED);
@@ -120,24 +120,32 @@ public class UserController {
 
     @GetMapping("/getPhone/")
     public ResponseEntity<?> getPhone() {
-        User loggedUser = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<String>(loggedUser.getPhone(), HttpStatus.CREATED);
     }
+
     @GetMapping("forgottenPassword/{phone}")
     public ResponseEntity<?> sendForgottenPasswordMail(@PathVariable("phone") String phone) {
         userService.forgottePasswordSendPass(phone);
         return new ResponseEntity<>("mail sent", HttpStatus.OK);
     }
+
     @GetMapping("search/{searchText}/{pageNum}")
-    public ResponseEntity<?> search(@PathVariable("searchText") String searchText,@PathVariable("pageNum") Integer pageNum) {
-        List<ProfileDto> profileDtos = userService.searchUser(searchText,pageNum);
+    public ResponseEntity<?> search(@PathVariable("searchText") String searchText, @PathVariable("pageNum") Integer pageNum) {
+        List<ProfileDto> profileDtos = userService.searchUser(searchText, pageNum);
         return new ResponseEntity<>(profileDtos, HttpStatus.OK);
+    }
+
+    @GetMapping("delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+        userService.deleteById(id);
+        return new ResponseEntity<>("ok", HttpStatus.OK);
     }
 
     @GetMapping("/myProfileInfoForUpdate")
     public ResponseEntity<?> myProfileInfoForUpdate() {
 
-        ProfileInfoForUpdateDto user  =userService.myProfileInfoForUpdate();
+        ProfileInfoForUpdateDto user = userService.myProfileInfoForUpdate();
         return new ResponseEntity<ProfileInfoForUpdateDto>(user, HttpStatus.CREATED);
     }
 
@@ -167,6 +175,7 @@ public class UserController {
 
         return new ResponseEntity<String>("updated", HttpStatus.ACCEPTED);
     }
+
     @PostMapping("/updatePassword")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto changePasswordDto, BindingResult result) {
         /*/*/
@@ -183,7 +192,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, BindingResult result) {
-        loginValidator.validate(loginRequest,result);
+        loginValidator.validate(loginRequest, result);
 
         ResponseEntity<?> errorMap = mapValidationErrorUtil.MapValidationService(result);
         if (errorMap != null) return errorMap;
